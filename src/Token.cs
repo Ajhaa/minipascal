@@ -1,6 +1,6 @@
 public enum TokenType 
 {
-    ID, INTEGER, REAL, STRING, 
+    IDENTIFIER, INTEGER, REAL, STRING, 
     
     OR, AND, NOT, IF,
     THEN, ELSE, OF, WHILE, DO, BEGIN,
@@ -10,7 +10,9 @@ public enum TokenType
     PLUS, MINUS, STAR, PERCENT, EQUAL,
     NOT_EQUAL, LESS, GREATER, LESS_EQ, GREATER_EQ,
     LEFT_PAREN, RIGHT_PAREN, LEFT_BRACKET, RIGHT_BRACKET,
-    ASSIGN, DOT, COMMA, SEMICOLON, COLON
+    ASSIGN, DOT, COMMA, SEMICOLON, COLON,
+
+    NONE // hack, a 'null value' from TokenType
 }
 
 public class Token
@@ -24,5 +26,11 @@ public class Token
         Type = type;
         Content = content;
         Line = line;
+    }
+
+    public override string ToString() 
+    {
+        if (Content == null) return Type.ToString();
+        return string.Format("{0}:{1}", Type, Content);
     }
 }

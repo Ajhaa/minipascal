@@ -6,8 +6,11 @@ namespace minipascal
     {
         static void Main(string[] args)
         {
-            var scanner = new Scanner("12313.123e10");
-            Console.WriteLine(scanner.Scan()[0].Content);
+            var scanner = new Scanner("program x assert 1.3e10");
+            foreach (var token in scanner.Scan()) 
+            {
+                Console.WriteLine(token);
+            }
         }
     }
 }

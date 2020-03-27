@@ -7,6 +7,7 @@ class Scanner
     private int line = 0;
     private int index = 0;
     private List<Token> tokens = new List<Token>();
+    private Reserved reservedWords = new Reserved();
 
     public Scanner(string input)
     {
@@ -133,10 +134,38 @@ class Scanner
                 {
                     makeNumber();
                 }
+
+                if (isLetter(current))
+                {
+                    identOrKeyword();
+                }
                 break;
         }
     }
-    // TODO multiLine?
+
+    // TODO lowercase somewhere
+    private void identOrKeyword()
+    {
+        int stringStart = index;
+        while (isLegalChar(lookahead()))
+        {
+            index++;
+        }
+
+        var result = input.Substring(stringStart, index - stringStart + 1);
+        var keyword = reservedWords.StringToKeyword(result);
+
+        if (keyword != NONE)
+        {
+            addToken(keyword, null);
+        }
+        else
+        {
+            addToken(IDENTIFIER, result);
+        }
+    }
+
+    // TODO should this be multiLine?
     public void makeString()
     {
         int start = index;
@@ -150,7 +179,6 @@ class Scanner
         addToken(STRING, str);
     }
 
-    // TODO e part of real
     private void makeNumber()
     {
         int numberStart = index;
@@ -207,6 +235,11 @@ class Scanner
     private bool isNumber(char c)
     {
         return (c >= '0' && c <= '9');
+    }
+
+    private bool isLegalChar(char c)
+    {
+        return isLetter(c) || isNumber(c) || c == '_';
     }
 
 }
