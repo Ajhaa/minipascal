@@ -1,0 +1,128 @@
+using System.Collections.Generic;
+using static TokenType;
+
+class Scanner
+{
+    private string input;
+    private int line = 0;
+    private int index = 0;
+    private List<Token> tokens = new List<Token>();
+
+    public Scanner(string input)
+    {
+        this.input = input;
+    }
+
+    public List<Token> Scan()
+    {
+        while (index < input.Length)
+        {
+            scanToken();
+            index++;
+        }
+
+        return tokens;
+    }
+
+    private void addToken(TokenType type, object content) 
+    {
+        tokens.Add(line, type, content);
+    }
+
+    private void scanToken()
+    {
+        char current = input[index];
+
+        switch (current)
+        {
+            // Simple one char
+            case '+':
+                addToken(PLUS, null);
+                break;
+            case '-':
+                addToken(MINUS, null);
+                break;
+            case '*':
+                addToken(STAR, null);
+                break;
+            case '%':
+                addToken(PERCENT, null);
+                break;
+            case '=':
+                addToken(EQUAL, null);
+                break;
+            case '(':
+                addToken(LEFT_PAREN, null);
+                break;
+            case ')':
+                addToken(RIGHT_PAREN, null);
+                break;
+            case '[':
+                addToken(LEFT_BRACKET, null);
+                break;
+            case ']':
+                addToken(RIGHT_BRACKET, null);
+                break;
+            case '.':
+                addToken(DOT, null);
+                break;
+            case ',':
+                addToken(COMMA, null);
+                break;
+            case ';':
+                addToken(SEMICOLON, null);
+                break;
+
+            // two char and amiguous
+            case '>':
+                if (lookahead() == '=')
+                {
+                    index++;
+                    addToken(GREATER_EQ, null);
+                }
+                else
+                {
+                    addToken(GREATER, null);
+                }
+                break;
+
+            case '<':
+                if (lookahead() == '=')
+                {
+                    index++;
+                    addToken(LESS_EQ, null);
+                }
+                else if (lookahead() == '>')
+                {
+                    index++;
+                    addToken(NOT_EQUAL, null);
+                }
+                else
+                {
+                    addToken(LESS, null);
+                }
+                break;
+
+            case ':':
+                if (lookahead() == '=')
+                {
+                    index++;
+                    addToken(ASSIGN, null);
+                }
+                else
+                {
+                    addToken(COLON, null);
+                }
+                break;
+
+
+            case '"':
+                index++;
+                makeString();
+                break;
+
+            case ' ':
+                break;
+        }
+    }
+}
