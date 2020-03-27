@@ -24,9 +24,14 @@ class Scanner
         return tokens;
     }
 
-    private void addToken(TokenType type, object content) 
+    private void addToken(TokenType type, object content)
     {
-        tokens.Add(line, type, content);
+        tokens.Add(new Token(type, content, line));
+    }
+
+    private char lookahead()
+    {
+        return input[index + 1];
     }
 
     private void scanToken()
@@ -123,6 +128,85 @@ class Scanner
 
             case ' ':
                 break;
+            default:
+                if (isNumber(current))
+                {
+                    makeNumber();
+                }
+                break;
         }
     }
+    // TODO multiLine?
+    public void makeString()
+    {
+        int start = index;
+
+        while (lookahead() != '"')
+        {
+            index++;
+        }
+
+        var str = input.Substring(start, index + start - 1);
+        addToken(STRING, str);
+    }
+
+    // TODO e part of real
+    private void makeNumber()
+    {
+        int numberStart = index;
+        bool isReal = false;
+        bool isExponent = false;
+
+        while (true)
+        {
+            if (index >= input.Length - 1) break;
+
+            var next = lookahead();
+            // TODO care about letters next to numbers?
+
+            if (!isNumber(next))
+            {
+                if (next == '.')
+                {
+                    if (isReal)
+                    {
+                        throw new System.Exception("'.' in wrong spot in float");
+                    }
+                    isReal = true;
+                }
+                else if (next == 'e') 
+                {
+                    if (isExponent)
+                    {
+                        throw new System.Exception("E");
+                    }
+                    isExponent = isReal = true;
+                }
+                else
+                {
+                    break;
+                }
+            }
+            index++;
+        }
+        var str = input.Substring(numberStart, index - numberStart + 1);
+        var type = isReal ? REAL : INTEGER;
+
+        // TODO actual real??
+        var value = isReal ? double.Parse(str) : int.Parse(str);
+
+        addToken(type, value);
+    }
+
+    private bool isLetter(char c)
+    {
+        return (c >= 'a' && c <= 'z') ||
+               (c >= 'A' && c <= 'Z');
+    }
+
+    private bool isNumber(char c)
+    {
+        return (c >= '0' && c <= '9');
+    }
+
 }

@@ -6,7 +6,8 @@ namespace minipascal
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            var scanner = new Scanner("12313.123e10");
+            Console.WriteLine(scanner.Scan()[0].Content);
         }
     }
 }

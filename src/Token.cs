@@ -1,6 +1,6 @@
-enum TokenType 
+public enum TokenType 
 {
-    ID, LITERAL, 
+    ID, INTEGER, REAL, STRING, 
     
     OR, AND, NOT, IF,
     THEN, ELSE, OF, WHILE, DO, BEGIN,
@@ -13,11 +13,11 @@ enum TokenType
     ASSIGN, DOT, COMMA, SEMICOLON, COLON
 }
 
-class Token
+public class Token
 {
-    TokenType Type { get; }
-    object Content { get; }
-    int Line { get; }
+    public TokenType Type { get; }
+    public object Content { get; }
+    public int Line { get; }
 
     public Token(TokenType type, object content, int line)
     {
