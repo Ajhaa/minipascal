@@ -1,0 +1,11 @@
+/home/atte/git/minipascal/bin/Debug/netcoreapp2.2/minipascal.deps.json
+/home/atte/git/minipascal/bin/Debug/netcoreapp2.2/minipascal.runtimeconfig.json
+/home/atte/git/minipascal/bin/Debug/netcoreapp2.2/minipascal.runtimeconfig.dev.json
+/home/atte/git/minipascal/bin/Debug/netcoreapp2.2/minipascal.dll
+/home/atte/git/minipascal/bin/Debug/netcoreapp2.2/minipascal.pdb
+/home/atte/git/minipascal/obj/Debug/netcoreapp2.2/minipascal.csprojAssemblyReference.cache
+/home/atte/git/minipascal/obj/Debug/netcoreapp2.2/minipascal.csproj.CoreCompileInputs.cache
+/home/atte/git/minipascal/obj/Debug/netcoreapp2.2/minipascal.AssemblyInfoInputs.cache
+/home/atte/git/minipascal/obj/Debug/netcoreapp2.2/minipascal.AssemblyInfo.cs
+/home/atte/git/minipascal/obj/Debug/netcoreapp2.2/minipascal.dll
+/home/atte/git/minipascal/obj/Debug/netcoreapp2.2/minipascal.pdb
