@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using static TokenType;
 
+
+// TODO right semicolon positions
 public class Parser
 {
     private List<Token> tokens;
@@ -97,6 +99,52 @@ public class Parser
 
     private Statement statement()
     {
+        var current = tokens[index];
+
+        switch (current.Type)
+        {
+            case VAR:
+                return varDeclarement();
+            case IDENTIFIER:
+                // TODO function call and write
+                return assignment();
+            default:
+                throw new Exception("unknown stmt");
+        }
+    }
+
+    // TODO identifers as strings vs objects
+    private Statement.Declarement varDeclarement()
+    {
+        // Consume the VAR
+        advance();
+
+        var identifiers = new List<string>();
+        identifiers.Add((string) match(IDENTIFIER).Content);
+        
+        while (tokens[index].Type == COMMA)
+        {
+            advance();
+            identifiers.Add((string) match(IDENTIFIER).Content);
+        }
+
+        match(COLON);
+        var type = match(IDENTIFIER);
+        
+        return new Statement.Declarement(type, identifiers);
+    }
+
+    private Statement.Assignment assignment()
+    {
+        var ident = (string) advance().Content;
+        match(ASSIGN);
+        var expr = expression();
+
+        return new Statement.Assignment(ident, expr);
+    }
+
+    private Statement write()
+    {
         match(IDENTIFIER);
         var stmt = new Statement.Write(arguments());
         match(SEMICOLON);
@@ -127,6 +175,7 @@ public class Parser
         do
         {
             var stmt = statement();
+            match(SEMICOLON);
             body.Add(stmt);
         } while (tokens[index].Type != END);
 
@@ -239,5 +288,4 @@ public class Parser
 
         return arguments;
     }
-
 }

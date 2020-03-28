@@ -1,10 +1,10 @@
 program Test;
-procedure writeSomething ();
-begin
-    writeln( "foo" );
-end;
 
 begin
-    writeln( "main" );
+    var x, y : integer;
+    var z : integer;
+    x := 1;
+    y := 2;
+    z := 3;
 end.
 

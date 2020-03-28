@@ -47,6 +47,30 @@ public class Statement
         }
     }
 
+    public class Declarement : Statement
+    {
+        public Token Type { get; }
+        public List<string> Identifiers { get; }
+
+        public Declarement(Token type, List<string> idents)
+        {
+            Type = type;
+            Identifiers = idents;
+        }
+    }
+
+    public class Assignment : Statement
+    {
+        public string Identifier { get; }
+        public Expression Expr { get; }
+
+        public Assignment(string ident, Expression expr)
+        {
+            Identifier = ident;
+            Expr = expr;
+        }
+    }
+
     // TODO multiple expr
     public class Write : Statement
     {
