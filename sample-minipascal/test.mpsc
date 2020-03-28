@@ -1,1 +1,1 @@
-writeln ( 24 )
+writeln ( (1 + func(x)) )

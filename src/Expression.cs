@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 public class Expression
 {
     public class Relation : Expression
@@ -11,6 +13,11 @@ public class Expression
             Operation = operation;
             Left = left;
             Right = right;
+        }
+
+        public override string ToString()
+        {
+            return string.Format("({0} {1} {2})", Operation.Type, Left, Right);
         }
     }
     
@@ -27,6 +34,11 @@ public class Expression
             Left = left;
             Right = right;
         }
+
+        public override string ToString()
+        {
+            return string.Format("({0} {1} {2})", Operation.Type, Left, Right);
+        }
     }
 
     public class Multiplication : Expression
@@ -42,13 +54,18 @@ public class Expression
             Left = left;
             Right = right;
         }
+
+        public override string ToString()
+        {
+            return string.Format("({0} {1} {2})", Operation.Type, Left, Right);
+        }
     }
 
-    public class Factor : Expression
+    public class Literal : Expression
     {   
         object Value { get; }
 
-        public Factor(object val)
+        public Literal(object val)
         {
             Value = val;
         }
@@ -57,5 +74,59 @@ public class Expression
         {
             return Value.ToString();
         } 
+    }
+
+    public class Variable : Expression
+    {   
+        object Identifier { get; }
+
+        public Variable(object val)
+        {
+            Identifier = val;
+        }
+
+        public override string ToString()
+        {
+            return Identifier.ToString();
+        } 
+    }
+
+    public class FunctionCall : Expression
+    {
+        object Identifier { get; }
+        List<Expression> Parameters { get; }
+
+        public FunctionCall(object ident, List<Expression> parameters)
+        {
+            Identifier = ident;
+            Parameters = parameters;
+        }
+
+        public override string ToString()
+        {
+            return string.Format("(call {0} ({1}))", Identifier, string.Join(',', Parameters));
+        }
+    }
+
+    public class Unary : Expression
+    {
+        Token Operation;
+        Expression Expr;
+
+        public Unary(Token op, Expression expr)
+        {
+            Operation = op;
+            Expr = expr;
+        }
+    }
+
+    public class Size : Expression
+    {
+        Expression Expr;
+
+        public Size(Expression expr)
+        {
+            Expr = expr;
+        }
     }
 }

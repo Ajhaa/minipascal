@@ -54,6 +54,9 @@ class Scanner
             case '%':
                 addToken(PERCENT, null);
                 break;
+            case '/':
+                addToken(SLASH, null);
+                break;
             case '=':
                 addToken(EQUAL, null);
                 break;
