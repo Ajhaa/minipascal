@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 
 namespace minipascal
 {
@@ -6,10 +7,18 @@ namespace minipascal
     {
         static void Main(string[] args)
         {
-            var scanner = new Scanner("program x assert 1.3e10");
-            foreach (var token in scanner.Scan()) 
+            var fileAsString = File.ReadAllText(args[0]);
+            var tokens = new Scanner(fileAsString).Scan();
+            foreach (var token in tokens) 
             {
                 Console.WriteLine(token);
+            }
+
+            var parser = new Parser(tokens);
+
+            foreach (var stmt in parser.Parse())
+            {
+                Console.WriteLine(stmt);
             }
         }
     }

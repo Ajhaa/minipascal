@@ -1,0 +1,28 @@
+program Collatz;
+
+function Calculate (number : integer, var mem : array [] of integer) : integer;
+begin
+    if number = 1 then return 1;
+
+    var next : integer;
+
+    if number % 2 = 0 then next := Calculate(number / 2, mem);
+    else next := Calculate(number * 3 + 1, mem);
+
+    mem[number] = next;
+
+    return number;
+end;
+
+begin
+    var memory : array [] of integer;
+
+    var i : integer;
+    i := 2;
+
+    while i < 30 do
+    begin
+        Calculate(i, memory);
+        i := i + 1;
+    end;
+end.
