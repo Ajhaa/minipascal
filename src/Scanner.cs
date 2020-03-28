@@ -168,18 +168,30 @@ class Scanner
         }
     }
 
-    // TODO should this be multiLine?
+    // TODO Check this
     public void makeString()
     {
-        int start = index;
-
-        while (lookahead() != '"')
+        int stringStart = index;
+        string newString = "";
+        while (input[index] != '"')
         {
-            index++;
-        }
+            if (input[index] == '\\' && input[index + 1] == 'n')
+            {
+                newString += '\n';
+                index += 2;
+                continue;
+            }
 
-        var str = input.Substring(start, index + start - 1);
-        addToken(STRING, str);
+            newString += input[index];
+            index++;
+
+            if (index >= input.Length)
+            {
+                throw new System.Exception("Unterminated string");
+            }
+
+        }
+        addToken(STRING, newString);
     }
 
     private void makeNumber()

@@ -1,1 +1,10 @@
-writeln ( (1 + func(x)) )
+program Test;
+procedure writeSomething ();
+begin
+    writeln( "foo" );
+end;
+
+begin
+    writeln( "main" );
+end.
+

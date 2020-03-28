@@ -32,7 +32,7 @@ public class Parser
 
     private Token match(TokenType t)
     {
-        return match((other) => other == t, "expected " + t  + " got {0}");
+        return match((other) => other == t, "expected " + t + " got {0}");
     }
 
     private Token match(Func<TokenType, bool> predicate, string message)
@@ -48,22 +48,90 @@ public class Parser
 
     public List<Statement> Parse()
     {
+        match(PROGRAM);
+        // TODO use the program name 
+        match(IDENTIFIER);
+        match(SEMICOLON);
         while (index < tokens.Count)
         {
-            program.Add(statement());
+            program.Add(function());
         }
         return program;
     }
 
-    private Statement statement() 
+    // TODO error if not func or proc
+    private Statement function()
+    {
+        var type = tokens[index].Type;
+
+        if (type == BEGIN)
+        {
+            return mainBlock();
+        }
+
+        advance();
+        var id = match(IDENTIFIER);
+        var parms = parameters();
+        Token returnType = null;
+
+        if (type == FUNCTION)
+        {
+            match(COLON);
+            returnType = match(IDENTIFIER);
+        }
+        match(SEMICOLON);
+
+        var body = block();
+        match(SEMICOLON);
+
+        return new Statement.Function(id, parms, returnType, body);
+    }
+
+    private List<Statement.Parameter> parameters()
+    {
+        match(LEFT_PAREN);
+        match(RIGHT_PAREN);
+        var parameters = new List<Statement.Parameter>();
+        return parameters;
+    }
+
+    private Statement statement()
     {
         match(IDENTIFIER);
-        match(LEFT_PAREN);
-
-        var stmt = new Statement.Write(expression());
-        match(RIGHT_PAREN);
-
+        var stmt = new Statement.Write(arguments());
+        match(SEMICOLON);
         return stmt;
+    }
+
+    // TODO index oob with match(DOT)
+    private Statement mainBlock()
+    {
+        // Speacial nameless ident for the main function
+        var ident = new Token(IDENTIFIER, null, -1);
+        var parameters = new List<Statement.Parameter>();
+        var body = block();
+        match(DOT);
+        return new Statement.Function(ident, parameters, null, body);
+    }
+
+    private Statement.Block block()
+    {
+        var body = new List<Statement>();
+        match(BEGIN);
+        if (lookahead().Type == END)
+        {
+            index += 2;
+            return new Statement.Block(body);
+        }
+
+        do
+        {
+            var stmt = statement();
+            body.Add(stmt);
+        } while (tokens[index].Type != END);
+
+        advance();
+        return new Statement.Block(body);
     }
 
     private Expression expression()
@@ -77,7 +145,7 @@ public class Parser
             var right = simpleExpr();
             return new Expression.Relation(relation, left, right);
         }
-        
+
         return left;
     }
 
@@ -141,29 +209,35 @@ public class Parser
         {
             return functionCall();
         }
-        
+
         return new Expression.Variable(advance().Content);
     }
 
-    private Expression functionCall() 
+    private Expression functionCall()
     {
         var ident = advance();
-        return new Expression.FunctionCall(ident.Content, parameters());
+        return new Expression.FunctionCall(ident.Content, arguments());
     }
 
-    private List<Expression> parameters()
+    // TODO mayhem
+    private List<Expression> arguments()
     {
         match(LEFT_PAREN);
-        var parameters = new List<Expression>();
-        while (lookahead().Type != RIGHT_PAREN)
+        var arguments = new List<Expression>();
+        if (lookahead().Type == RIGHT_PAREN)
         {
-            parameters.Add(expression());
-            match(COMMA);
+            index += 2;
+            return arguments;
         }
-        parameters.Add(expression());
+
+        do
+        {
+            var expr = expression();
+            arguments.Add(expr);
+        } while (tokens[index].Type != RIGHT_PAREN);
         match(RIGHT_PAREN);
 
-        return parameters;
+        return arguments;
     }
 
 }

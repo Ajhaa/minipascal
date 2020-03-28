@@ -94,17 +94,17 @@ public class Expression
     public class FunctionCall : Expression
     {
         object Identifier { get; }
-        List<Expression> Parameters { get; }
+        List<Expression> Arguments { get; }
 
-        public FunctionCall(object ident, List<Expression> parameters)
+        public FunctionCall(object ident, List<Expression> arguments)
         {
             Identifier = ident;
-            Parameters = parameters;
+            Arguments = arguments;
         }
 
         public override string ToString()
         {
-            return string.Format("(call {0} ({1}))", Identifier, string.Join(',', Parameters));
+            return string.Format("(call {0} ({1}))", Identifier, string.Join(',', Arguments));
         }
     }
 
