@@ -71,6 +71,16 @@ public class Statement
         }
     }
 
+    public class Call : Statement
+    {
+        public Expression.FunctionCall Expr;
+
+        public Call(Expression.FunctionCall expr)
+        {
+            Expr = expr;
+        }
+    }
+
     // TODO multiple expr
     public class Write : Statement
     {

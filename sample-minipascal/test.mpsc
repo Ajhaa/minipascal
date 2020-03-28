@@ -1,5 +1,10 @@
 program Test;
 
+procedure F (var x : integer, y : string);
+begin
+    x := 10;
+end;
+
 begin
     var x, y : integer;
     var z : integer;

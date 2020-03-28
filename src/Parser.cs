@@ -48,6 +48,16 @@ public class Parser
         return current;
     }
 
+    private Token matchIf(TokenType t)
+    {
+        if (tokens[index].Type == t)
+        {
+            return advance();
+        }
+
+        return null;
+    }
+
     public List<Statement> Parse()
     {
         match(PROGRAM);
@@ -91,9 +101,22 @@ public class Parser
 
     private List<Statement.Parameter> parameters()
     {
-        match(LEFT_PAREN);
-        match(RIGHT_PAREN);
         var parameters = new List<Statement.Parameter>();
+
+        match(LEFT_PAREN);
+        while(true)
+        {
+            var isRef = matchIf(VAR) != null;
+            var ident = match(IDENTIFIER);
+            match(COLON);
+            var type = match(IDENTIFIER);
+            parameters.Add(new Statement.Parameter(isRef, type, ident));
+            if (matchIf(COMMA) == null)
+            {
+                break;
+            }
+        }
+        match(RIGHT_PAREN);
         return parameters;
     }
 
@@ -106,8 +129,15 @@ public class Parser
             case VAR:
                 return varDeclarement();
             case IDENTIFIER:
-                // TODO function call and write
-                return assignment();
+                switch(lookahead().Type)
+                {
+                    case LEFT_PAREN:
+                        return new Statement.Call(functionCall());
+                    case ASSIGN:
+                        return assignment();
+                    default:
+                        throw new Exception("no writeln yet")
+                }
             default:
                 throw new Exception("unknown stmt");
         }
@@ -262,7 +292,7 @@ public class Parser
         return new Expression.Variable(advance().Content);
     }
 
-    private Expression functionCall()
+    private Expression.FunctionCall functionCall()
     {
         var ident = advance();
         return new Expression.FunctionCall(ident.Content, arguments());
