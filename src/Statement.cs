@@ -1,9 +1,17 @@
 using System.Collections.Generic;
 
-public class Statement
+public abstract class Statement
 {
+    public abstract T Accept<T>(Visitor<T> visitor);
+
     public interface Visitor<T>
     {
+        T VisitFunctionStatement(Statement.Function stmt);
+        T VisitBlockStatement(Statement.Block stmt);
+        T VisitParameterStatement(Statement.Parameter stmt);
+        T VisitDeclarementStatement(Statement.Declarement stmt);
+        T VisitAssignmentStatement(Statement.Assignment stmt);
+        T VisitCallStatement(Statement.Call stmt);
         T VisitWriteStatement(Statement.Write stmt);
     }
 
@@ -21,6 +29,11 @@ public class Statement
             ReturnValue = retVal;
             Body = body;
         }
+
+        public override T Accept<T>(Visitor<T> visitor)
+        {
+            return visitor.VisitFunctionStatement(this);
+        }
     }
 
     public class Block : Statement
@@ -30,6 +43,11 @@ public class Statement
         public Block(List<Statement> stmts)
         {
             Statements = stmts;
+        }
+
+        public override T Accept<T>(Visitor<T> visitor)
+        {
+            return visitor.VisitBlockStatement(this);
         }
     }
 
@@ -45,6 +63,11 @@ public class Statement
             Type = type;
             Identifier = ident;
         }
+
+        public override T Accept<T>(Visitor<T> visitor)
+        {
+            return visitor.VisitParameterStatement(this);
+        }
     }
 
     public class Declarement : Statement
@@ -56,6 +79,11 @@ public class Statement
         {
             Type = type;
             Identifiers = idents;
+        }
+
+        public override T Accept<T>(Visitor<T> visitor)
+        {
+            return visitor.VisitDeclarementStatement(this);
         }
     }
 
@@ -69,6 +97,11 @@ public class Statement
             Identifier = ident;
             Expr = expr;
         }
+
+        public override T Accept<T>(Visitor<T> visitor)
+        {
+            return visitor.VisitAssignmentStatement(this);
+        }
     }
 
     public class Call : Statement
@@ -79,9 +112,13 @@ public class Statement
         {
             Expr = expr;
         }
+
+        public override T Accept<T>(Visitor<T> visitor)
+        {
+            return visitor.VisitCallStatement(this);
+        }
     }
 
-    // TODO multiple expr
     public class Write : Statement
     {
         public List<Expression> Arguments { get; }
@@ -94,6 +131,11 @@ public class Statement
         public override string ToString()
         {
             return string.Format("(writeln {0})", string.Join(',', Arguments));
+        }
+
+        public override T Accept<T>(Visitor<T> visitor)
+        {
+            return visitor.VisitWriteStatement(this);
         }
     }
 }

@@ -8,7 +8,7 @@ public class Parser
 {
     private List<Token> tokens;
     private int index = 0;
-    private List<Statement> program = new List<Statement>();
+    private List<Statement.Function> program = new List<Statement.Function>();
     private Reserved reserved = new Reserved();
 
     public Parser(List<Token> tokens)
@@ -58,7 +58,7 @@ public class Parser
         return null;
     }
 
-    public List<Statement> Parse()
+    public List<Statement.Function> Parse()
     {
         match(PROGRAM);
         // TODO use the program name 
@@ -72,7 +72,7 @@ public class Parser
     }
 
     // TODO error if not func or proc
-    private Statement function()
+    private Statement.Function function()
     {
         var type = tokens[index].Type;
 
@@ -136,7 +136,7 @@ public class Parser
                     case ASSIGN:
                         return assignment();
                     default:
-                        throw new Exception("no writeln yet")
+                        throw new Exception("no writeln yet");
                 }
             default:
                 throw new Exception("unknown stmt");
@@ -182,10 +182,10 @@ public class Parser
     }
 
     // TODO index oob with match(DOT)
-    private Statement mainBlock()
+    private Statement.Function mainBlock()
     {
-        // Speacial nameless ident for the main function
-        var ident = new Token(IDENTIFIER, null, -1);
+        // Speacial name for the main function block thingy
+        var ident = new Token(IDENTIFIER, "__main__", -1);
         var parameters = new List<Statement.Parameter>();
         var body = block();
         match(DOT);

@@ -236,9 +236,15 @@ class Scanner
         var type = isReal ? REAL : INTEGER;
 
         // TODO actual real??
-        var value = isReal ? double.Parse(str) : int.Parse(str);
+        if (isReal)
+        {
+            addToken(type, double.Parse(str));
+        } 
+        else 
+        {
+            addToken(type, int.Parse(str));
+        }
 
-        addToken(type, value);
     }
 
     private bool isLetter(char c)

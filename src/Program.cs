@@ -16,9 +16,13 @@ namespace minipascal
 
             var parser = new Parser(tokens);
 
-            foreach (var stmt in parser.Parse())
+            var program = parser.Parse();
+
+            var wasm = new Generator(program).Generate();
+
+            foreach (var b in wasm[0].Body)
             {
-                Console.WriteLine(stmt);
+                Console.WriteLine(b.ToString("X2"));
             }
         }
     }
