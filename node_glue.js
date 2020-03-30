@@ -1,6 +1,6 @@
 const fs = require("fs");
-const readlineSync = require('readline-sync');
-const textEncoding = require('text-encoding');
+// const readlineSync = require('readline-sync');
+// const textEncoding = require('text-encoding');
 
 var memory = new WebAssembly.Memory({ initial: 4 });
 
@@ -33,21 +33,20 @@ function read(offset) {
 }
 
 function dispInt(val) {
-    console.log(val);
-    return val;
+    console.log(">", val);
 }
 
-const js = { read: read, mem: memory, log, dispInt }
+const js = { read: read, mem: memory, log, write: dispInt }
 const core = { memory }
 
 async function run() {
-    const stdFile = fs.readFileSync("stdlib.wasm");
-    const stdModule = await WebAssembly.instantiate(stdFile, { core, js });
-    const stdlib = stdModule.instance.exports;
+    //const stdFile = fs.readFileSync(".wasm");
+    //const stdModule = await WebAssembly.instantiate(stdFile, { core, js });
+    //const stdlib = stdModule.instance.exports;
 
-    fs.readFile("test.wasm", {}, (err, data) => {
-        WebAssembly.instantiate(data, { stdlib, core, js }).then(wasm => {
-            console.log(wasm.instance.exports.main());
+    fs.readFile("pascal.wasm", {}, (err, data) => {
+        WebAssembly.instantiate(data, { core, js }).then(wasm => {
+            wasm.instance.exports.__main__();
         })
     });
 }

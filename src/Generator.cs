@@ -144,10 +144,8 @@ class Generator : Statement.Visitor<object>, Expression.Visitor<object>
 
     public object visitCallExpression(Expression.FunctionCall expr)
     {
-        Console.WriteLine(expr.Arguments.Count);
         foreach (var arg in expr.Arguments)
         {
-            Console.WriteLine("asd");
             arg.Accept(this);
         }
 

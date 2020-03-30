@@ -7,6 +7,6 @@
         i32.const 24
         i32.const 1234
         i32.store)
-    (func (local i32)
+    (func (export "__main__") (local i32)
         i32.const 332
         drop))

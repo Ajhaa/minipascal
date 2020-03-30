@@ -22,6 +22,7 @@ class WASMwriter
         generateTypes();
         wasm.AddRange(WASMbase.Import);
         generateFunctionMeta();
+        generateExports();
         generateFunctionCode();
         return wasm;
     }
@@ -47,6 +48,18 @@ class WASMwriter
         }
     }
 
+    private void generateExports()
+    {
+        var mainIndex = program.FindIndex(p => p.Name == "__main__") + 1; // +1 because write is a func
+        wasm.AddRange(new Byte[] {
+            0x07, 0x0c, 0x01, 0x08,
+
+            0x5f, 0x5f, 0x6d, 0x61, 
+            0x69, 0x6e, 0x5f, 0x5f,
+
+            0x00, Convert.ToByte(mainIndex)
+        });
+    }
 
     // TODO fix length stuff
     private void generateFunctionCode()
