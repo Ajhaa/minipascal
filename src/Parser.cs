@@ -106,6 +106,7 @@ public class Parser
         match(LEFT_PAREN);
         while(true)
         {
+            if (tokens[index].Type == RIGHT_PAREN) break;
             var isRef = matchIf(VAR) != null;
             var ident = match(IDENTIFIER);
             match(COLON);

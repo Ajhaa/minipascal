@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System;
-
+using System.Linq;
 class WASMwriter
 {
     private List<WASMFunction> program;
@@ -28,7 +28,7 @@ class WASMwriter
 
     private void generateTypes()
     {
-        wasm.AddRange(new byte[] { 
+        wasm.AddRange(new byte[] {
             0x01, 0x04, 0x01,
             0x60, 0x00, 0x00
         });
@@ -36,27 +36,43 @@ class WASMwriter
 
     private void generateFunctionMeta()
     {
-        wasm.AddRange(new byte[] {
-            0x03, 0x02, 0x01, 0x00
-        });
+        var size = Util.LEB128encode(program.Count + 1);
+        wasm.Add(0x03);
+        wasm.AddRange(size);
+        wasm.AddRange(Util.LEB128encode(program.Count));
+        foreach (var func in program)
+        {
+            wasm.Add(0x00); // for now everything is () => ()
+        }
     }
 
+
+    // TODO fix length stuff
     private void generateFunctionCode()
     {
-        var size = program[0].Body.Count + 4;
-        var sectSize = size + 2;
-        var localCount = Convert.ToByte(program[0].Locals);
+        var sectSize = program.Sum(p => p.Body.Count) + 4 * program.Count + 1;
+        var encSectSize = Util.LEB128encode(sectSize);
+        // TODO remove this stupid hack
+        encSectSize = Util.LEB128encode(sectSize + encSectSize.Count);
+        encSectSize = Util.LEB128encode(sectSize + encSectSize.Count);
 
         wasm.Add(0x0a);
-        wasm.AddRange(Util.LEB128encode(sectSize));
-        wasm.Add(0x01);
+        wasm.AddRange(encSectSize);
 
-        wasm.AddRange(Util.LEB128encode(size));
-        wasm.AddRange(new byte[] {
-            0x01, localCount, 0x7f
-        });
+        wasm.AddRange(Util.LEB128encode(program.Count));
 
-        wasm.AddRange(program[0].Body);
-        wasm.Add(0x0b);
+        foreach (var func in program)
+        {
+            var localCount = Convert.ToByte(func.Locals);
+            var size = func.Body.Count + 4;
+
+            wasm.AddRange(Util.LEB128encode(size));
+            wasm.AddRange(new byte[] {
+                0x01, localCount, 0x7f
+            });
+
+            wasm.AddRange(func.Body);
+            wasm.Add(0x0b);
+        }
     }
 }

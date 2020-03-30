@@ -1,5 +1,11 @@
 program Test;
 
+procedure P ();
+begin
+    var foobar : integer;
+    foobar := 4 * 4 - 3;
+end;
+
 begin
     var x, y : integer;
     var z : integer;
