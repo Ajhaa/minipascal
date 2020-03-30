@@ -7,11 +7,13 @@ class Generator : Statement.Visitor<object>, Expression.Visitor<object>
     private List<WASMFunction> wasm = new List<WASMFunction>();
     private WASMFunction current;
     private Environment environment = new Environment();
+    private Environment functions = new Environment();
     private int memoryPointer = 0;
 
     public Generator(List<Statement.Function> program)
     {
         this.program = program;
+        functions.Declare("write");
     }
 
     public List<WASMFunction> Generate()
@@ -36,9 +38,11 @@ class Generator : Statement.Visitor<object>, Expression.Visitor<object>
 
     public object VisitFunctionStatement(Statement.Function stmt)
     {
+        var name = ((Token)stmt.Identifier).Content.ToString();
         var parameters = stmt.Parameters.Count;
         var returnValues = stmt.ReturnValue == null ? 0 : 1;
-        current = new WASMFunction(parameters, returnValues, ((Token)stmt.Identifier).Content.ToString());
+        current = new WASMFunction(parameters, returnValues, name);
+        functions.Declare(name);
 
         stmt.Body.Accept(this);
         wasm.Add(current);
@@ -57,7 +61,11 @@ class Generator : Statement.Visitor<object>, Expression.Visitor<object>
         environment.ExitInner();
         return null;
     }
-    public object VisitParameterStatement(Statement.Parameter stmt) { return null; }
+
+    // TODO handle var param vs normal param
+    public object VisitParameterStatement(Statement.Parameter stmt) { 
+        return null;
+    }
     public object VisitDeclarementStatement(Statement.Declarement stmt)
     {
         foreach (var ident in stmt.Identifiers)
@@ -91,7 +99,10 @@ class Generator : Statement.Visitor<object>, Expression.Visitor<object>
 
         return null;
     }
-    public object VisitCallStatement(Statement.Call stmt) { return null; }
+    public object VisitCallStatement(Statement.Call stmt) { 
+        stmt.Expr.Accept(this);
+        return null;
+     }
     public object VisitWriteStatement(Statement.Write stmt) { return null; }
 
     // TODO plus vs minus vs OR
@@ -128,6 +139,21 @@ class Generator : Statement.Visitor<object>, Expression.Visitor<object>
         addInstruction(Util.LEB128encode(index));
         addInstruction(0x28, 0x02, 0x00); // load from memory
 
+        return null;
+    }
+
+    public object visitCallExpression(Expression.FunctionCall expr)
+    {
+        Console.WriteLine(expr.Arguments.Count);
+        foreach (var arg in expr.Arguments)
+        {
+            Console.WriteLine("asd");
+            arg.Accept(this);
+        }
+
+        var index = Util.LEB128encode(functions.FindIndex(expr.Identifier.ToString()));
+        addInstruction(0x10);
+        addInstruction(index);
         return null;
     }
 }

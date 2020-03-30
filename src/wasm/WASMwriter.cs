@@ -29,7 +29,8 @@ class WASMwriter
     private void generateTypes()
     {
         wasm.AddRange(new byte[] {
-            0x01, 0x04, 0x01,
+            0x01, 0x08, 0x02,
+            0x60, 0x01, 0x7f, 0x00,
             0x60, 0x00, 0x00
         });
     }
@@ -42,7 +43,7 @@ class WASMwriter
         wasm.AddRange(Util.LEB128encode(program.Count));
         foreach (var func in program)
         {
-            wasm.Add(0x00); // for now everything is () => ()
+            wasm.Add(0x01); // for now everything is () => ()
         }
     }
 
@@ -51,16 +52,16 @@ class WASMwriter
     private void generateFunctionCode()
     {
         wasm.Add(0x0a);
-        wasm.Add(0);
+        wasm.Add(0); // placeholder for section size
         var index = wasm.Count - 1;
 
         wasm.AddRange(Util.LEB128encode(program.Count));
 
         foreach (var func in program)
         {
+            // TODO currently allows only 64 variables per function
             var localCount = Convert.ToByte(func.Locals);
             var size = func.Body.Count + 4;
-            Console.WriteLine(size);
             var encSize = Util.LEB128encode(size);
             wasm.AddRange(encSize);
             wasm.AddRange(new byte[] {
@@ -73,6 +74,7 @@ class WASMwriter
 
         var sectSize = wasm.Count - index - 1;
         var encSectSize = Util.LEB128encode(sectSize);
+        //replace placeholder with actual section size
         wasm[index] = encSectSize[0];
         if (encSectSize.Count > 1)
         {

@@ -3,3 +3,4 @@ bin/
 .vscode
 *.wasm
 !wasm/*.wasm
+sample-minipascal/test.mpsc

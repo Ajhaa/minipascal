@@ -304,7 +304,7 @@ public class Parser
     {
         match(LEFT_PAREN);
         var arguments = new List<Expression>();
-        if (lookahead().Type == RIGHT_PAREN)
+        if (tokens[index].Type == RIGHT_PAREN)
         {
             index += 2;
             return arguments;

@@ -9,6 +9,7 @@ public abstract class Expression
         T visitMultiplicationExpression(Expression.Multiplication expr);
         T visitLiteralExpression(Expression.Literal expr);
         T visitVariableExpression(Expression.Variable expr);
+        T visitCallExpression(Expression.FunctionCall expr);
         
     }
     public class Relation : Expression
@@ -126,8 +127,8 @@ public abstract class Expression
 
     public class FunctionCall : Expression
     {
-        object Identifier { get; }
-        List<Expression> Arguments { get; }
+        public object Identifier { get; }
+        public List<Expression> Arguments { get; }
 
         public FunctionCall(object ident, List<Expression> arguments)
         {
@@ -142,7 +143,7 @@ public abstract class Expression
 
         public override T Accept<T>(Visitor<T> visitor)
         {
-            throw new System.NotImplementedException();
+            return visitor.visitCallExpression(this);
         }
     }
 
