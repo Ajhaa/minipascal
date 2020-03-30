@@ -24,6 +24,16 @@ class Generator : Statement.Visitor<object>, Expression.Visitor<object>
         return wasm;
     }
 
+    private void addInstruction(params byte[] instructions)
+    {
+        current.Body.AddRange(instructions);
+    }
+
+    private void addInstruction(IEnumerable<byte> instructions)
+    {
+        current.Body.AddRange(instructions);
+    }
+
     public object VisitFunctionStatement(Statement.Function stmt)
     {
         var parameters = stmt.Parameters.Count;
@@ -57,40 +67,67 @@ class Generator : Statement.Visitor<object>, Expression.Visitor<object>
         }
         return null;
     }
+
+    // TODO store pointer
     public object VisitAssignmentStatement(Statement.Assignment stmt)
     {
+        var pointer = Util.LEB128encode(memoryPointer);
         var index = environment.FindIndex(stmt.Identifier);
+        
+        // store a integer to memory at pointer
+        addInstruction(0x41);
+        addInstruction(pointer);
+        
+        memoryPointer += 4;
         stmt.Expr.Accept(this);
-        // TODO Store result to memory pointer, store pointer to local
+        // the store instruction and its immediates
+        addInstruction(0x36, 0x02, 0x00);
+
+        // store memory address into local variable
+        addInstruction(0x41); // constant
+        addInstruction(pointer); // value of the constant
+        addInstruction(0x21); // setlocal
+        addInstruction(Util.LEB128encode(index)); // local index
 
         return null;
     }
     public object VisitCallStatement(Statement.Call stmt) { return null; }
     public object VisitWriteStatement(Statement.Write stmt) { return null; }
 
+    // TODO plus vs minus vs OR
     public object visitAdditionExpression(Expression.Addition expr)
     {
-        expr.Right.Accept(this);
         expr.Left.Accept(this);
-        current.Body.Add(0x6A);
+        expr.Right.Accept(this);
+
+        var op = Util.OpToIntegerInstruction(expr.Operation);
+        current.Body.Add(op);
         return null;
     }
+
+    // TODO times vs divide vs AND
     public object visitMultiplicationExpression(Expression.Multiplication expr)
     {
-        expr.Right.Accept(this);
         expr.Left.Accept(this);
-        current.Body.Add(0x6C);
+        expr.Right.Accept(this);
+
+        var op = Util.OpToIntegerInstruction(expr.Operation);
+        current.Body.Add(op);
         return null;
     }
     public object visitLiteralExpression(Expression.Literal expr)
     {
-        System.Console.WriteLine(expr.Value);
-        current.Body.Add(0x41);
-        current.Body.Add(Convert.ToByte(expr.Value));
+        addInstruction(0x41);
+        addInstruction(Util.LEB128encode((int)expr.Value));
         return null;
     }
     public object visitVariableExpression(Expression.Variable expr)
     {
+        var index = environment.FindIndex(expr.Identifier.ToString());
+        addInstruction(0x20); // get local
+        addInstruction(Util.LEB128encode(index));
+        addInstruction(0x28, 0x02, 0x00); // load from memory
+
         return null;
     }
 }

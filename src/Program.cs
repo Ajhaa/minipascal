@@ -9,10 +9,6 @@ namespace minipascal
         {
             var fileAsString = File.ReadAllText(args[0]);
             var tokens = new Scanner(fileAsString).Scan();
-            foreach (var token in tokens) 
-            {
-                Console.WriteLine(token);
-            }
 
             var parser = new Parser(tokens);
 
@@ -20,10 +16,16 @@ namespace minipascal
 
             var wasm = new Generator(program).Generate();
 
-            foreach (var b in wasm[0].Body)
+            var binary = new WASMwriter(wasm).Write();
+
+            var bWriter = new BinaryWriter(File.Open("pascal.wasm", FileMode.Create));
+            
+            foreach (var b in binary)
             {
-                Console.WriteLine(b.ToString("X2"));
+                bWriter.Write(b);
             }
+
+            bWriter.Close();
         }
     }
 }

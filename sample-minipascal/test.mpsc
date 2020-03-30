@@ -3,8 +3,8 @@ program Test;
 begin
     var x, y : integer;
     var z : integer;
-    x := 1 + 1;
+    x := 210 - 14130;
     y := 2 - 2;
-    z := 3 + 4;
+    z := x * y;
 end.
 
