@@ -50,14 +50,9 @@ class WASMwriter
     // TODO fix length stuff
     private void generateFunctionCode()
     {
-        var sectSize = program.Sum(p => p.Body.Count) + 4 * program.Count + 1;
-        var encSectSize = Util.LEB128encode(sectSize);
-        // TODO remove this stupid hack
-        encSectSize = Util.LEB128encode(sectSize + encSectSize.Count);
-        encSectSize = Util.LEB128encode(sectSize + encSectSize.Count);
-
         wasm.Add(0x0a);
-        wasm.AddRange(encSectSize);
+        wasm.Add(0);
+        var index = wasm.Count - 1;
 
         wasm.AddRange(Util.LEB128encode(program.Count));
 
@@ -65,14 +60,23 @@ class WASMwriter
         {
             var localCount = Convert.ToByte(func.Locals);
             var size = func.Body.Count + 4;
-
-            wasm.AddRange(Util.LEB128encode(size));
+            Console.WriteLine(size);
+            var encSize = Util.LEB128encode(size);
+            wasm.AddRange(encSize);
             wasm.AddRange(new byte[] {
                 0x01, localCount, 0x7f
             });
 
             wasm.AddRange(func.Body);
             wasm.Add(0x0b);
+        }
+
+        var sectSize = wasm.Count - index - 1;
+        var encSectSize = Util.LEB128encode(sectSize);
+        wasm[index] = encSectSize[0];
+        if (encSectSize.Count > 1)
+        {
+            wasm.InsertRange(index+1, encSectSize.Skip(1));
         }
     }
 }

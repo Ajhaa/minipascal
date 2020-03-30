@@ -1,16 +1,41 @@
 program Test;
 
+
+procedure H ();
+begin
+    var doh : integer;
+    doh := 5 % 2;
+end;
+
 procedure P ();
 begin
-    var foobar : integer;
-    foobar := 4 * 4 - 3;
+    var z : integer;
+    z := 13;
+end;
+
+procedure Q ();
+begin
+    var x : integer;
+    x := 1 - 123;
 end;
 
 begin
-    var x, y : integer;
-    var z : integer;
-    x := 210 - 14130;
-    y := 2 - 2;
-    z := x * y;
+    var foobar : integer;
+    foobar := 4 * 4 - 3;
+    foobar := 4 * 4 - 3;
+    foobar := 4 * 4 - 3;
+    foobar := 4 * 4 - 3;
+    foobar := 4 * 4 - 3;
+    foobar := 4 * 4 - 3;
+    foobar := 4 * 4 - 3;
+    foobar := 4 * 4 - 3;
+    foobar := 4 * 4 - 3;
+    foobar := 4 * 4 - 3;
+    foobar := 4 * 4 - 3;
+    foobar := 4 * 4 - 3;
+    foobar := 4 * 4 - 3;
+    foobar := 4 * 4 - 3;
+    foobar := 4 * 4 - 3;
+    foobar := 4 * 4 - 3;
 end.
 
