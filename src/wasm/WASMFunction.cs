@@ -10,6 +10,7 @@ class WASMFunction
     // Name is used if functio is wasm exported
     public string Name { get; }
     public List<byte> Body { get; }
+    public int TypeIndex { get; set; }
 
     public WASMFunction(int parameters, int results, string name)
     {

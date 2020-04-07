@@ -1,19 +1,23 @@
 using System.Collections.Generic;
 using System;
 using System.Linq;
+
+// TODO do everything in a single loop?
 class WASMwriter
 {
     private List<WASMFunction> program;
     private List<byte> wasm = new List<byte>();
+    private HashSet<Tuple<int, int>> types = new HashSet<Tuple<int, int>>();
 
     public WASMwriter(List<WASMFunction> program)
     {
         this.program = program;
+        types.Add(new Tuple<int, int>(1, 0));
     }
 
     // we need to generate 4 sections and the header
     // 1. type section: describes different function signatures
-    // TODO 2. import section: describes imported functions
+    // 2. import section: describes imported functions
     // 3. function section: describes functions and attaches them to a type
     // 4. code section: the actual function code 
     public List<byte> Write()
@@ -29,11 +33,20 @@ class WASMwriter
 
     private void generateTypes()
     {
+        var typeIndex = 0;
+        var patchIndex = wasm.Count + 1;
         wasm.AddRange(new byte[] {
             0x01, 0x08, 0x02,
             0x60, 0x01, 0x7f, 0x00,
             0x60, 0x00, 0x00
         });
+        foreach (var func in program)
+        {
+            if (types.Add(func.Signature))
+            {
+
+            }
+        }
     }
 
     private void generateFunctionMeta()

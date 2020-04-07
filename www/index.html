@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Minipascal</title>
+    <link rel="stylesheet" href="index.css">
+    <script src="index.js" type="module"></script>
+    <script src="codeInput.js" type="module"></script>    
+</head>
+<body>
+    <h1>Minipascal to wasm compiler</h1>
+    <div style="display: flex;">
+        <div style="margin-right: 10em;">
+            <h2>input minipascal code</h2>
+            <textarea
+                id="code-window"
+                rows="25"
+                cols="80"
+                placeholder="your minipascal program here..."
+                spellcheck="false"
+            ></textarea>
+            <div>
+                <button id="compile-and-run">compile and run</button>
+            </div>
+        </div>
+        <div>
+            <h2>upload a minipascal file</h2>
+            <input id="file-input" type="file">
+        </div>
+    </div>
+    <div>
+        <h2>output</h2>
+           
+        <textarea
+            readonly
+            id="output-window"
+            rows="15"
+            cols="75"
+            spellcheck="false"
+            autocomplete="off"
+        ></textarea>
+    </div>
+</body>
+</html>
