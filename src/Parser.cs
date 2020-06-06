@@ -130,6 +130,10 @@ public class Parser
             case VAR:
                 return varDeclarement();
             case IDENTIFIER:
+                // if (current.Content.Equals("write"))
+                // {
+                //     return write();
+                // }
                 switch(lookahead().Type)
                 {
                     case LEFT_PAREN:
@@ -137,8 +141,11 @@ public class Parser
                     case ASSIGN:
                         return assignment();
                     default:
-                        throw new Exception("no writeln yet");
+                        throw new Exception("wtf");
                 }
+            case RETURN:
+                index++;
+                return new Statement.Return(expression());
             default:
                 throw new Exception("unknown stmt");
         }
@@ -306,7 +313,7 @@ public class Parser
         var arguments = new List<Expression>();
         if (tokens[index].Type == RIGHT_PAREN)
         {
-            index += 2;
+            index += 1;
             return arguments;
         }
 

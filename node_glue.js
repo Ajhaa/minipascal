@@ -4,10 +4,11 @@ const fs = require("fs");
 
 var memory = new WebAssembly.Memory({ initial: 4 });
 
-function log(offset, length) {
-    var bytes = new Uint8Array(memory.buffer, offset, length+1);    
+function log(offset) {
+    var bytes = new Uint8Array(memory.buffer, offset);
+    const length = Number(bytes[0])    
     let s = ""
-    for (char of bytes) {
+    for (char of bytes.slice(1, length + 1)) {
         s += String.fromCharCode(char)
     }
     console.log(s);

@@ -38,9 +38,10 @@ class WASMwriter
         var typeIndex = 0;
         var patchIndex = wasm.Count + 1;
         wasm.AddRange(new byte[] {
-            0x01, 0x09, 0x02,
-            0x60, 0x02, 0x7f, 0x7f, 0x00,
-            0x60, 0x00, 0x00
+            0x01, 0x0c, 0x03,
+            0x60, 0x01, 0x7f, 0x00,
+            0x60, 0x00, 0x00,
+            0x60, 0x00, 0x01, 0x7f
         });
         foreach (var func in program.functions)
         {
@@ -89,13 +90,22 @@ class WASMwriter
         wasm.AddRange(Util.LEB128encode(program.Count()));
         foreach (var func in program.functions)
         {
-            wasm.Add(0x01); // for now everything is () => ()
+            // TODO dynamicize
+            if (func.Signature.Item2 == 1) 
+            {
+                wasm.Add(0x02);
+            } 
+            else 
+            {
+                wasm.Add(0x01);
+            }
         }
     }
 
     private void generateExports()
     {
-        var mainIndex = program.functions.FindIndex(p => p.Name == "__main__") + 1; // +1 because write is a func
+        // TODO increase the number when more funcs imported
+        var mainIndex = program.functions.FindIndex(p => p.Name == "__main__") + 1; 
         wasm.AddRange(new Byte[] {
             0x07, 0x0c, 0x01, 0x08,
 

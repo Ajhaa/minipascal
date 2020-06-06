@@ -11,6 +11,7 @@ public abstract class Statement
         T VisitParameterStatement(Statement.Parameter stmt);
         T VisitDeclarementStatement(Statement.Declarement stmt);
         T VisitAssignmentStatement(Statement.Assignment stmt);
+        T VisitReturnStatement(Statement.Return stmt);
         T VisitCallStatement(Statement.Call stmt);
         T VisitWriteStatement(Statement.Write stmt);
     }
@@ -101,6 +102,21 @@ public abstract class Statement
         public override T Accept<T>(Visitor<T> visitor)
         {
             return visitor.VisitAssignmentStatement(this);
+        }
+    }
+
+    public class Return : Statement
+    {
+        public Expression Expr { get; }
+
+        public Return(Expression expr)
+        {
+            Expr = expr;
+        }
+
+        public override T Accept<T>(Visitor<T> visitor)
+        {
+            return visitor.VisitReturnStatement(this);
         }
     }
 

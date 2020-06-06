@@ -102,7 +102,13 @@ class Generator : Statement.Visitor<object>, Expression.Visitor<object>
     public object VisitCallStatement(Statement.Call stmt) { 
         stmt.Expr.Accept(this);
         return null;
-     }
+    }
+
+    public object VisitReturnStatement(Statement.Return stmt)
+    {
+        stmt.Expr.Accept(this);
+        return null;
+    }
     public object VisitWriteStatement(Statement.Write stmt) { return null; }
 
     // TODO plus vs minus vs OR
@@ -134,9 +140,9 @@ class Generator : Statement.Visitor<object>, Expression.Visitor<object>
             wasm.addData(memoryPointer, expr.Value.ToString());
             addInstruction(0x41);
             addInstruction(Util.LEB128encode(memoryPointer));
-            addInstruction(0x41);
-            addInstruction(Util.LEB128encode(memoryPointer));
-            addInstruction(0x2d, 0x00, 0x00); 
+            // addInstruction(0x41);
+            // addInstruction(Util.LEB128encode(memoryPointer));
+            // addInstruction(0x2d, 0x00, 0x00); 
             memoryPointer += expr.Value.ToString().Length + 1; 
             return null;
         }
