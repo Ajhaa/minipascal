@@ -4,17 +4,11 @@ const fs = require("fs");
 
 var memory = new WebAssembly.Memory({ initial: 4 });
 
-function log(offset) {
-    var bytes = new Uint8Array(memory.buffer, offset);    
-    let i = 0;
+function log(offset, length) {
+    var bytes = new Uint8Array(memory.buffer, offset, length+1);    
     let s = ""
-    while (true) {
-        if (bytes[i] != 0) {
-            s += String.fromCharCode(bytes[i]);
-        } else {
-            break;
-        }
-        i++;
+    for (char of bytes) {
+        s += String.fromCharCode(char)
     }
     console.log(s);
 }
@@ -36,7 +30,7 @@ function dispInt(val) {
     console.log(">", val);
 }
 
-const js = { read: read, mem: memory, log, write: dispInt }
+const js = { read: read, mem: memory, log, write: log }
 const core = { memory }
 
 async function run() {

@@ -4,7 +4,7 @@ using System;
 class Generator : Statement.Visitor<object>, Expression.Visitor<object>
 {
     private List<Statement.Function> program;
-    private List<WASMFunction> wasm = new List<WASMFunction>();
+    private WASM wasm = new WASM();
     private WASMFunction current;
     private Environment environment = new Environment();
     private Environment functions = new Environment();
@@ -16,7 +16,7 @@ class Generator : Statement.Visitor<object>, Expression.Visitor<object>
         functions.Declare("write");
     }
 
-    public List<WASMFunction> Generate()
+    public WASM Generate()
     {
         foreach (var func in program)
         {
@@ -45,7 +45,7 @@ class Generator : Statement.Visitor<object>, Expression.Visitor<object>
         functions.Declare(name);
 
         stmt.Body.Accept(this);
-        wasm.Add(current);
+        wasm.addFunction(current);
 
         return null;
     }
@@ -128,6 +128,18 @@ class Generator : Statement.Visitor<object>, Expression.Visitor<object>
     }
     public object visitLiteralExpression(Expression.Literal expr)
     {
+        if (expr.Value is string)
+        {
+            // TODO handle the memory slot correctly
+            wasm.addData(memoryPointer, expr.Value.ToString());
+            addInstruction(0x41);
+            addInstruction(Util.LEB128encode(memoryPointer));
+            addInstruction(0x41);
+            addInstruction(Util.LEB128encode(memoryPointer));
+            addInstruction(0x2d, 0x00, 0x00); 
+            memoryPointer += expr.Value.ToString().Length + 1; 
+            return null;
+        }
         addInstruction(0x41);
         addInstruction(Util.LEB128encode((int)expr.Value));
         return null;

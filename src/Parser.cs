@@ -231,7 +231,7 @@ public class Parser
 
     //TODO sign
     private Expression simpleExpr()
-    {
+    { 
         var left = term();
         if (reserved.IsAddition(tokens[index]))
         {

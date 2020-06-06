@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-class WASMFunction
+public class WASMFunction
 {
     // params and return values
     public Tuple<int, int> Signature { get; }

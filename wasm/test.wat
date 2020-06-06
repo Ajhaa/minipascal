@@ -1,7 +1,8 @@
 (module
     (import "js" "mem" (memory 1))
     (import "js" "write" (func (param i32 i32)))
-
+    (data (i32.const 0) "asd")
+    
     ;; (import "js" "read" (func (param i32) (result i32)))
     (func (local i32 i32 i32)
         i32.const 24
