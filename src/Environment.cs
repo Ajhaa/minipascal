@@ -12,12 +12,16 @@ class Environment
 
     public void EnterInner()
     {
-        environment.AddFirst(new List<string>(environment.First.Value));
+        environment.AddFirst(new List<string>());
     }
 
     public int FindIndex(string elem)
     {
-        return environment.First.Value.IndexOf(elem);
+        var first = environment.First.Value.IndexOf(elem);
+        if (first == -1) {
+            return environment.First.Next.Value.IndexOf(elem);
+        }
+        return first;
     }
 
     public void ExitInner()

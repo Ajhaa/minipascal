@@ -1,5 +1,7 @@
 using System.Collections.Generic;
+using System.Linq;
 using System;
+using static Instruction;
 
 class Generator : Statement.Visitor<object>, Expression.Visitor<object>
 {
@@ -31,6 +33,11 @@ class Generator : Statement.Visitor<object>, Expression.Visitor<object>
         current.Body.AddRange(instructions);
     }
 
+    private void addInstruction(params Instruction[] instructions)
+    {
+        current.Body.AddRange(instructions.Select(elem => (byte) elem));
+    }
+
     private void addInstruction(IEnumerable<byte> instructions)
     {
         current.Body.AddRange(instructions);
@@ -44,8 +51,39 @@ class Generator : Statement.Visitor<object>, Expression.Visitor<object>
         current = new WASMFunction(parameters, returnValues, name);
         functions.Declare(name);
 
+        // TODO too many nested envs?
+        environment.EnterInner();
+        byte i = 0;
+        // TODO pass by
+        foreach (var param in stmt.Parameters)
+        {
+            environment.Declare(param.Identifier.ToString());
+
+            var pointer = Util.LEB128encode(memoryPointer);
+            memoryPointer += 4;
+
+            // pass by value; copy the value of the param to a new memory address
+            addInstruction(I32_CONST);
+            addInstruction(pointer);
+
+            addInstruction(LOCAL_GET);
+            addInstruction(i);
+
+            addInstruction(0x36, 0x02, 0x00);
+
+            addInstruction(I32_CONST);
+            addInstruction(pointer);
+
+            addInstruction(LOCAL_SET);
+            addInstruction(i);
+
+            i++;
+        }
+
         stmt.Body.Accept(this);
         wasm.addFunction(current);
+
+        environment.ExitInner();
 
         return null;
     }
@@ -94,7 +132,7 @@ class Generator : Statement.Visitor<object>, Expression.Visitor<object>
         // store memory address into local variable
         addInstruction(0x41); // constant
         addInstruction(pointer); // value of the constant
-        addInstruction(0x21); // setlocal
+        addInstruction(LOCAL_SET);
         addInstruction(Util.LEB128encode(index)); // local index
 
         return null;
@@ -153,7 +191,8 @@ class Generator : Statement.Visitor<object>, Expression.Visitor<object>
     public object visitVariableExpression(Expression.Variable expr)
     {
         var index = environment.FindIndex(expr.Identifier.ToString());
-        addInstruction(0x20); // get local
+        Console.WriteLine(index + " " + expr.Identifier);
+        addInstruction(LOCAL_GET);
         addInstruction(Util.LEB128encode(index));
         addInstruction(0x28, 0x02, 0x00); // load from memory
 

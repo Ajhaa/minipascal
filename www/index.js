@@ -6,7 +6,7 @@ const fileInput = document.getElementById("file-input");
 
 
 compileButton.onclick = () => {
-    var memory = new WebAssembly.Memory({ initial: 4 });
+    var memory = new WebAssembly.Memory({ initial: 64 });
     outputWindow.value = "compiling...\n";
     fetch("http://localhost:3001/", {
         method: 'POST',

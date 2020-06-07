@@ -108,7 +108,7 @@ public class Parser
         {
             if (tokens[index].Type == RIGHT_PAREN) break;
             var isRef = matchIf(VAR) != null;
-            var ident = match(IDENTIFIER);
+            var ident = match(IDENTIFIER).Content;
             match(COLON);
             var type = match(IDENTIFIER);
             parameters.Add(new Statement.Parameter(isRef, type, ident));

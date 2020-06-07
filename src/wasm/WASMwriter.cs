@@ -8,12 +8,12 @@ class WASMwriter
 {
     private WASM program;
     private List<byte> wasm = new List<byte>();
-    private HashSet<Tuple<int, int>> types = new HashSet<Tuple<int, int>>();
+    private Dictionary<Tuple<int, int>, int> types = new Dictionary<Tuple<int, int>, int>();
 
     public WASMwriter(WASM program)
     {
         this.program = program;
-        types.Add(new Tuple<int, int>(1, 0));
+        types.Add(new Tuple<int, int>(1, 0), 0);
     }
 
     // we need to generate 4 sections and the header
@@ -35,21 +35,43 @@ class WASMwriter
 
     private void generateTypes()
     {
-        var typeIndex = 0;
-        var patchIndex = wasm.Count + 1;
+        var typeIndex = 1;
+        var index = wasm.Count + 1;
         wasm.AddRange(new byte[] {
-            0x01, 0x0c, 0x03,
-            0x60, 0x01, 0x7f, 0x00,
-            0x60, 0x00, 0x00,
-            0x60, 0x00, 0x01, 0x7f
+            0x01, 0x00, 0x00,
+            0x60, 0x01, 0x7f, 0x00
         });
         foreach (var func in program.functions)
         {
-            if (types.Add(func.Signature))
+            if (!types.ContainsKey(func.Signature))
             {
-
+                types.Add(func.Signature, typeIndex);
+                typeIndex++;
+                wasm.AddRange(new byte[] {
+                    0x60, Convert.ToByte(func.Signature.Item1)
+                });
+                for (var i = 0; i < func.Signature.Item1; i++)
+                {
+                    wasm.Add(0x7f);
+                }
+                wasm.Add(Convert.ToByte(func.Signature.Item2));
+                if (func.Signature.Item2 == 1)
+                {  
+                    wasm.Add(0x7f);
+                }
             }
         }
+
+        var sectSize = wasm.Count - index - 1;
+        var encSectSize = Util.LEB128encode(sectSize);
+        //replace placeholder with actual section size
+        wasm[index] = encSectSize[0];
+        if (encSectSize.Count > 1)
+        {
+            wasm.InsertRange(index+1, encSectSize.Skip(1));
+        }
+
+        wasm[index + encSectSize.Count] = Convert.ToByte(types.Count);
     }
 
     private void generateData()
@@ -61,10 +83,12 @@ class WASMwriter
         wasm.AddRange(Util.LEB128encode(program.data.Count));
         foreach (var segment in program.data)
         {
+            var pointer = Util.LEB128encode(segment.Item1);
             wasm.AddRange(new byte[] {
-                0x00, 0x41, 
-                Convert.ToByte(segment.Item1), 0x0b, 
-                Convert.ToByte(segment.Item2.Length + 1)
+                0x00, 0x41 });
+            wasm.AddRange(pointer);
+            wasm.AddRange(new byte[] {    
+                0x0b, Convert.ToByte(segment.Item2.Length + 1)
             });
             // TODO store string length as bigger number
             var bytes = Encoding.UTF8.GetBytes(segment.Item2);
@@ -90,15 +114,7 @@ class WASMwriter
         wasm.AddRange(Util.LEB128encode(program.Count()));
         foreach (var func in program.functions)
         {
-            // TODO dynamicize
-            if (func.Signature.Item2 == 1) 
-            {
-                wasm.Add(0x02);
-            } 
-            else 
-            {
-                wasm.Add(0x01);
-            }
+            wasm.Add(Convert.ToByte(types[func.Signature]));
         }
     }
 
