@@ -59,23 +59,23 @@ class Generator : Statement.Visitor<object>, Expression.Visitor<object>
         {
             environment.Declare(param.Identifier);
 
-            var pointer = Util.LEB128encode(memoryPointer);
-            memoryPointer += 4;
+            // var pointer = Util.LEB128encode(memoryPointer);
+            // memoryPointer += 4;
 
-            // pass by value; copy the value of the param to a new memory address
-            addInstruction(I32_CONST);
-            addInstruction(pointer);
+            // // pass by value; copy the value of the param to a new memory address
+            // addInstruction(I32_CONST);
+            // addInstruction(pointer);
 
-            addInstruction(LOCAL_GET);
-            addInstruction(i);
+            // addInstruction(LOCAL_GET);
+            // addInstruction(i);
 
-            addInstruction(0x36, 0x02, 0x00);
+            // addInstruction(0x36, 0x02, 0x00);
 
-            addInstruction(I32_CONST);
-            addInstruction(pointer);
+            // addInstruction(I32_CONST);
+            // addInstruction(pointer);
 
-            addInstruction(LOCAL_SET);
-            addInstruction(i);
+            // addInstruction(LOCAL_SET);
+            // addInstruction(i);
 
             i++;
         }
@@ -200,14 +200,28 @@ class Generator : Statement.Visitor<object>, Expression.Visitor<object>
 
     public object visitCallExpression(Expression.FunctionCall expr)
     {
+        var index = functions.FindIndex(expr.Identifier);
         foreach (var arg in expr.Arguments)
         {
+            var pointer = Util.LEB128encode(memoryPointer);
+            memoryPointer += 4;
+
+            // pass by value; copy the value of the param to a new memory address
+
+            addInstruction(I32_CONST);
+            addInstruction(pointer);
+
             arg.Accept(this);
+
+
+            addInstruction(0x36, 0x02, 0x00);
+            
+            addInstruction(I32_CONST);
+            addInstruction(pointer);
         }
 
-        var index = Util.LEB128encode(functions.FindIndex(expr.Identifier));
         addInstruction(0x10);
-        addInstruction(index);
+        addInstruction(Util.LEB128encode(index));
         return null;
     }
 }

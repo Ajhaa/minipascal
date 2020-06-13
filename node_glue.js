@@ -5,10 +5,11 @@ const fs = require("fs");
 var memory = new WebAssembly.Memory({ initial: 4 });
 
 function log(offset) {
-   // console.log("offset", offset)
-    let bytes = new Uint8Array(memory.buffer, offset);
+    const location = new Uint32Array(new Uint8Array(memory.buffer, offset))[0];
+    // console.log("offset", location)
+    let bytes = new Uint8Array(memory.buffer, location);
     const length = Number(bytes[0])
-   // console.log("length", length)    
+    // console.log("length", length)    
     let s = ""
     for (char of bytes.slice(1, length + 1)) {
         s += String.fromCharCode(char)
@@ -46,7 +47,7 @@ function dispInt(val) {
     console.log(">", val);
 }
 
-const js = { read: read, mem: memory, log, write: log, toString: intToString }
+const js = { read: read, mem: memory, write: log, toString: intToString }
 const core = { memory }
 
 async function run() {
