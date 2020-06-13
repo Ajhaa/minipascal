@@ -88,10 +88,12 @@ public abstract class Expression
     public class Literal : Expression
     {   
         public object Value { get; }
+        public string Type { get; }
 
-        public Literal(object val)
+        public Literal(object val, string type)
         {
             Value = val;
+            Type = type;
         }
 
         public override string ToString()
@@ -127,10 +129,10 @@ public abstract class Expression
 
     public class FunctionCall : Expression
     {
-        public object Identifier { get; }
+        public string Identifier { get; }
         public List<Expression> Arguments { get; }
 
-        public FunctionCall(object ident, List<Expression> arguments)
+        public FunctionCall(string ident, List<Expression> arguments)
         {
             Identifier = ident;
             Arguments = arguments;

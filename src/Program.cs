@@ -18,6 +18,8 @@ namespace minipascal
             var parser = new Parser(tokens);
             var program = parser.Parse();
 
+            new Analyzer(program);
+
             var wasm = new Generator(program).Generate();
             var binary = new WASMwriter(wasm).Write();
 

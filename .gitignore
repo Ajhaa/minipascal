@@ -4,3 +4,4 @@ bin/
 *.wasm
 !wasm/*.wasm
 sample-minipascal/test.mpsc
+simple.mpsc

@@ -57,7 +57,7 @@ class Generator : Statement.Visitor<object>, Expression.Visitor<object>
         // TODO pass by
         foreach (var param in stmt.Parameters)
         {
-            environment.Declare(param.Identifier.ToString());
+            environment.Declare(param.Identifier);
 
             var pointer = Util.LEB128encode(memoryPointer);
             memoryPointer += 4;
@@ -191,7 +191,6 @@ class Generator : Statement.Visitor<object>, Expression.Visitor<object>
     public object visitVariableExpression(Expression.Variable expr)
     {
         var index = environment.FindIndex(expr.Identifier.ToString());
-        Console.WriteLine(index + " " + expr.Identifier);
         addInstruction(LOCAL_GET);
         addInstruction(Util.LEB128encode(index));
         addInstruction(0x28, 0x02, 0x00); // load from memory
@@ -206,7 +205,7 @@ class Generator : Statement.Visitor<object>, Expression.Visitor<object>
             arg.Accept(this);
         }
 
-        var index = Util.LEB128encode(functions.FindIndex(expr.Identifier.ToString()));
+        var index = Util.LEB128encode(functions.FindIndex(expr.Identifier));
         addInstruction(0x10);
         addInstruction(index);
         return null;

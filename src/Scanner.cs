@@ -132,6 +132,9 @@ class Scanner
 
             case ' ':
                 break;
+            case '\n':
+                line++;
+                break;
             default:
                 if (isNumber(current))
                 {

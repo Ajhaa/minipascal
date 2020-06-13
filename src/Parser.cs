@@ -34,7 +34,7 @@ public class Parser
 
     private Token match(TokenType t)
     {
-        return match((other) => other == t, "expected " + t + " got {0}");
+        return match((other) => other == t, "line {0}: expected " + t + " got {1}");
     }
 
     private Token match(Func<TokenType, bool> predicate, string message)
@@ -42,7 +42,7 @@ public class Parser
         var current = advance();
         if (!predicate(current.Type))
         {
-            throw new System.Exception(string.Format(message, current));
+            throw new System.Exception(string.Format(message, current.Line, current));
         }
 
         return current;
@@ -108,10 +108,10 @@ public class Parser
         {
             if (tokens[index].Type == RIGHT_PAREN) break;
             var isRef = matchIf(VAR) != null;
-            var ident = match(IDENTIFIER).Content;
+            var ident = match(IDENTIFIER).Content.ToString();
             match(COLON);
             var type = match(IDENTIFIER);
-            parameters.Add(new Statement.Parameter(isRef, type, ident));
+            parameters.Add(new Statement.Parameter(isRef, type.Content.ToString(), ident));
             if (matchIf(COMMA) == null)
             {
                 break;
@@ -269,7 +269,7 @@ public class Parser
         var current = tokens[index];
         if (reserved.IsLiteral(current))
         {
-            return new Expression.Literal(advance().Content);
+            return new Expression.Literal(advance().Content, current.Type.ToString().ToLower());
         }
         if (current.Type == IDENTIFIER)
         {
@@ -303,7 +303,7 @@ public class Parser
     private Expression.FunctionCall functionCall()
     {
         var ident = advance();
-        return new Expression.FunctionCall(ident.Content, arguments());
+        return new Expression.FunctionCall(ident.Content.ToString(), arguments());
     }
 
     // TODO mayhem

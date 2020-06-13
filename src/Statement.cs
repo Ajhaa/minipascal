@@ -55,10 +55,10 @@ public abstract class Statement
     public class Parameter : Statement
     {
         public bool IsRef { get; }
-        public Token Type { get; }
-        public object Identifier { get; }
+        public string Type { get; }
+        public string Identifier { get; }
 
-        public Parameter(bool isRef, Token type, object ident)
+        public Parameter(bool isRef, string type, string ident)
         {
             IsRef = isRef;
             Type = type;

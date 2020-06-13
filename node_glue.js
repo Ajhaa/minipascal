@@ -6,7 +6,7 @@ var memory = new WebAssembly.Memory({ initial: 4 });
 
 function log(offset) {
    // console.log("offset", offset)
-    var bytes = new Uint8Array(memory.buffer, offset);
+    let bytes = new Uint8Array(memory.buffer, offset);
     const length = Number(bytes[0])
    // console.log("length", length)    
     let s = ""
@@ -14,6 +14,19 @@ function log(offset) {
         s += String.fromCharCode(char)
     }
     console.log(s);
+}
+
+function intToString(offset, pointer) {
+    let int = new Int32Array(memory.buffer, offset)[0];
+    let memory = new Uint8Array(memory.buffer, pointer);
+
+    let str = int.toString()
+
+    memory[0] = str.length
+
+    for (let i = 1; i < str.length; i++) {
+        memory[i] = str[i]
+    }
 }
 
 function read(offset) {
@@ -33,7 +46,7 @@ function dispInt(val) {
     console.log(">", val);
 }
 
-const js = { read: read, mem: memory, log, write: log }
+const js = { read: read, mem: memory, log, write: log, toString: intToString }
 const core = { memory }
 
 async function run() {
