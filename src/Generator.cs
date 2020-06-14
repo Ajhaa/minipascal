@@ -11,6 +11,7 @@ class Generator : Statement.Visitor<object>, Expression.Visitor<object>
     private Environment environment = new Environment();
     private Environment functions = new Environment();
     private int memoryPointer = 0;
+    private Dictionary<string, List<bool>> passByVar = new Dictionary<string, List<bool>>();
 
     public Generator(List<Statement.Function> program)
     {
@@ -45,7 +46,7 @@ class Generator : Statement.Visitor<object>, Expression.Visitor<object>
 
     public object VisitFunctionStatement(Statement.Function stmt)
     {
-        var name = ((Token)stmt.Identifier).Content.ToString();
+        var name = stmt.Identifier;
         var parameters = stmt.Parameters.Count;
         var returnValues = stmt.ReturnValue == null ? 0 : 1;
         current = new WASMFunction(parameters, returnValues, name);
@@ -53,31 +54,13 @@ class Generator : Statement.Visitor<object>, Expression.Visitor<object>
 
         // TODO too many nested envs?
         environment.EnterInner();
-        byte i = 0;
+        passByVar.Add(name, new List<bool>());
         // TODO pass by
         foreach (var param in stmt.Parameters)
         {
             environment.Declare(param.Identifier);
+            passByVar[name].Add(param.IsRef);
 
-            // var pointer = Util.LEB128encode(memoryPointer);
-            // memoryPointer += 4;
-
-            // // pass by value; copy the value of the param to a new memory address
-            // addInstruction(I32_CONST);
-            // addInstruction(pointer);
-
-            // addInstruction(LOCAL_GET);
-            // addInstruction(i);
-
-            // addInstruction(0x36, 0x02, 0x00);
-
-            // addInstruction(I32_CONST);
-            // addInstruction(pointer);
-
-            // addInstruction(LOCAL_SET);
-            // addInstruction(i);
-
-            i++;
         }
 
         stmt.Body.Accept(this);
@@ -108,8 +91,24 @@ class Generator : Statement.Visitor<object>, Expression.Visitor<object>
     {
         foreach (var ident in stmt.Identifiers)
         {
+            var pointer = Util.LEB128encode(memoryPointer);
+
             current.Locals++;
-            environment.Declare(ident);
+            var index = environment.Declare(ident);
+            // store a placeholder 0 to the memory
+            addInstruction(0x41);
+            addInstruction(pointer);
+            
+            memoryPointer += 4;
+            addInstruction(I32_CONST);
+            addInstruction(Util.LEB128encode(0));
+
+            addInstruction(0x36, 0x02, 0x00);
+
+            addInstruction(I32_CONST);
+            addInstruction(pointer);
+            addInstruction(LOCAL_SET);
+            addInstruction(Util.LEB128encode(index));
         }
         return null;
     }
@@ -118,22 +117,15 @@ class Generator : Statement.Visitor<object>, Expression.Visitor<object>
     public object VisitAssignmentStatement(Statement.Assignment stmt)
     {
         var pointer = Util.LEB128encode(memoryPointer);
-        var index = environment.FindIndex(stmt.Identifier);
-        
-        // store a integer to memory at pointer
-        addInstruction(0x41);
-        addInstruction(pointer);
-        
         memoryPointer += 4;
-        stmt.Expr.Accept(this);
-        // the store instruction and its immediates
-        addInstruction(0x36, 0x02, 0x00);
+        var index = Util.LEB128encode(environment.FindIndex(stmt.Identifier));
 
-        // store memory address into local variable
-        addInstruction(0x41); // constant
-        addInstruction(pointer); // value of the constant
-        addInstruction(LOCAL_SET);
-        addInstruction(Util.LEB128encode(index)); // local index
+        addInstruction(LOCAL_GET);
+        addInstruction(index);
+
+        stmt.Expr.Accept(this);
+
+        addInstruction(0x36, 0x02, 0x00);
 
         return null;
     }
@@ -201,23 +193,34 @@ class Generator : Statement.Visitor<object>, Expression.Visitor<object>
     public object visitCallExpression(Expression.FunctionCall expr)
     {
         var index = functions.FindIndex(expr.Identifier);
-        foreach (var arg in expr.Arguments)
+        List<bool> outVar;
+        var hasPassBy = passByVar.TryGetValue(expr.Identifier, out outVar);
+        for (var i = 0; i < expr.Arguments.Count; i++)
         {
-            var pointer = Util.LEB128encode(memoryPointer);
-            memoryPointer += 4;
+            var arg = expr.Arguments[i];
 
-            // pass by value; copy the value of the param to a new memory address
+            if (hasPassBy && outVar[i])
+            {
+                var varIdx = environment.FindIndex(((Expression.Variable) arg).Identifier.ToString());
+                addInstruction(LOCAL_GET);
+                addInstruction(Util.LEB128encode(varIdx));
+            } else {
+                var pointer = Util.LEB128encode(memoryPointer);
+                memoryPointer += 4;
 
-            addInstruction(I32_CONST);
-            addInstruction(pointer);
+                // pass by value; copy the value of the param to a new memory address
 
-            arg.Accept(this);
+                addInstruction(I32_CONST);
+                addInstruction(pointer);
+
+                arg.Accept(this);
 
 
-            addInstruction(0x36, 0x02, 0x00);
-            
-            addInstruction(I32_CONST);
-            addInstruction(pointer);
+                addInstruction(0x36, 0x02, 0x00);
+                
+                addInstruction(I32_CONST);
+                addInstruction(pointer);
+            }
         }
 
         addInstruction(0x10);

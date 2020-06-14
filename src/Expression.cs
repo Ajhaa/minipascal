@@ -109,9 +109,9 @@ public abstract class Expression
 
     public class Variable : Expression
     {   
-        public object Identifier { get; }
+        public string Identifier { get; }
 
-        public Variable(object val)
+        public Variable(string val)
         {
             Identifier = val;
         }

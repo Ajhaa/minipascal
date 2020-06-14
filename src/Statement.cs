@@ -18,12 +18,12 @@ public abstract class Statement
 
     public class Function : Statement
     {
-        public object Identifier { get; }
+        public string Identifier { get; }
         public List<Statement.Parameter> Parameters { get; }
         public Token ReturnValue { get; }
         public Statement.Block Body { get; }
 
-        public Function(object id, List<Statement.Parameter> parameters, Token retVal, Statement.Block body)
+        public Function(string id, List<Statement.Parameter> parameters, Token retVal, Statement.Block body)
         {
             Identifier = id;
             Parameters = parameters;

@@ -96,7 +96,7 @@ public class Parser
         var body = block();
         match(SEMICOLON);
 
-        return new Statement.Function(id, parms, returnType, body);
+        return new Statement.Function(id.Content.ToString(), parms, returnType, body);
     }
 
     private List<Statement.Parameter> parameters()
@@ -197,7 +197,7 @@ public class Parser
         var parameters = new List<Statement.Parameter>();
         var body = block();
         match(DOT);
-        return new Statement.Function(ident, parameters, null, body);
+        return new Statement.Function(ident.Content.ToString(), parameters, null, body);
     }
 
     private Statement.Block block()
@@ -297,7 +297,7 @@ public class Parser
             return functionCall();
         }
 
-        return new Expression.Variable(advance().Content);
+        return new Expression.Variable(advance().Content.ToString());
     }
 
     private Expression.FunctionCall functionCall()

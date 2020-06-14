@@ -17,6 +17,7 @@ class Environment
 
     public int FindIndex(string elem)
     {
+        // TODO check deeper
         var first = environment.First.Value.IndexOf(elem);
         if (first == -1) {
             return environment.First.Next.Value.IndexOf(elem);
@@ -33,8 +34,9 @@ class Environment
         }
     }
 
-    public void Declare(string ident)
+    public int Declare(string ident)
     {   
         environment.First.Value.Add(ident);
+        return environment.First.Value.IndexOf(ident);
     }
 }
