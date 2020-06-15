@@ -206,6 +206,7 @@ class Generator : Statement.Visitor<object>, Expression.Visitor<object>
     public object VisitReturnStatement(Statement.Return stmt)
     {
         stmt.Expr.Accept(this);
+        addInstruction(0x0F); // return
         return null;
     }
     public object VisitWriteStatement(Statement.Write stmt) { return null; }
