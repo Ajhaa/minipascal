@@ -59,6 +59,7 @@ class Generator : Statement.Visitor<object>, Expression.Visitor<object>
         foreach (var param in stmt.Parameters)
         {
             environment.Declare(param.Identifier);
+            current.Locals++;
             passByVar[name].Add(param.IsRef);
 
         }
@@ -72,14 +73,15 @@ class Generator : Statement.Visitor<object>, Expression.Visitor<object>
     }
     public object VisitBlockStatement(Statement.Block stmt)
     {
-        environment.EnterInner();
+        // TODO handle locals in blocks
+        //environment.EnterInner();
 
         foreach (var s in stmt.Statements)
         {
             s.Accept(this);
         }
 
-        environment.ExitInner();
+        //environment.ExitInner();
         return null;
     }
 
@@ -134,12 +136,38 @@ class Generator : Statement.Visitor<object>, Expression.Visitor<object>
         return null;
     }
 
+    public object VisitIfStatement(Statement.If stmt)
+    {
+        stmt.Condition.Accept(this);
+
+        addInstruction(0x04); // if
+        addInstruction(0x40); // if returns void
+        stmt.Then.Accept(this);
+        if (stmt.Else != null)
+        {
+            addInstruction(0x05);
+            stmt.Else.Accept(this);
+        }
+
+        addInstruction(0x0b); // end
+        return null;
+    }
+
     public object VisitReturnStatement(Statement.Return stmt)
     {
         stmt.Expr.Accept(this);
         return null;
     }
     public object VisitWriteStatement(Statement.Write stmt) { return null; }
+
+    public object visitRelationExpression(Expression.Relation expr)
+    {
+        expr.Left.Accept(this);
+        expr.Right.Accept(this);
+
+        addInstruction(Util.OpToIntegerInstruction(expr.Operation));
+        return null;
+    }
 
     // TODO plus vs minus vs OR
     public object visitAdditionExpression(Expression.Addition expr)

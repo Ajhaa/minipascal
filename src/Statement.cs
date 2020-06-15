@@ -14,6 +14,7 @@ public abstract class Statement
         T VisitReturnStatement(Statement.Return stmt);
         T VisitCallStatement(Statement.Call stmt);
         T VisitWriteStatement(Statement.Write stmt);
+        T VisitIfStatement(Statement.If stmt);
     }
 
     public class Function : Statement
@@ -102,6 +103,25 @@ public abstract class Statement
         public override T Accept<T>(Visitor<T> visitor)
         {
             return visitor.VisitAssignmentStatement(this);
+        }
+    }
+
+    public class If : Statement
+    {
+        public Expression Condition { get; }
+        public Statement Then { get; }
+        public Statement Else { get; }
+
+        public If(Expression condition, Statement thenStmt, Statement elseStmt)
+        {
+            Condition = condition;
+            Then = thenStmt;
+            Else = elseStmt;
+        }
+
+        public override T Accept<T>(Visitor<T> visitor)
+        {
+            return visitor.VisitIfStatement(this);
         }
     }
 

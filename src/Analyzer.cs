@@ -61,11 +61,22 @@ class Analyzer : Statement.Visitor<object>, Expression.Visitor<object>
     return null;
   }
 
+
+  public object VisitIfStatement(Statement.If stmt)
+  {
+      return null;
+  }
+
   public object VisitReturnStatement(Statement.Return stmt)
   {
     return stmt.Expr.Accept(this);
   }
   public object VisitWriteStatement(Statement.Write stmt) { return null; }
+
+  public object visitRelationExpression(Expression.Relation expr)
+  {
+      return null;
+  }
 
   // TODO plus vs minus vs OR
   public object visitAdditionExpression(Expression.Addition expr)

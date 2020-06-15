@@ -10,15 +10,16 @@ public abstract class Expression
         T visitLiteralExpression(Expression.Literal expr);
         T visitVariableExpression(Expression.Variable expr);
         T visitCallExpression(Expression.FunctionCall expr);
+        T visitRelationExpression(Expression.Relation expr);
         
     }
     public class Relation : Expression
     {
-        Token Operation { get; }
-        Expression Left { get; }
-        Expression Right { get; }
+        public TokenType Operation { get; }
+        public Expression Left { get; }
+        public Expression Right { get; }
 
-        public Relation(Token operation, Expression left, Expression right)
+        public Relation(TokenType operation, Expression left, Expression right)
         {
             Operation = operation;
             Left = left;
@@ -27,22 +28,22 @@ public abstract class Expression
 
         public override string ToString()
         {
-            return string.Format("({0} {1} {2})", Operation.Type, Left, Right);
+            return string.Format("({0} {1} {2})", Operation, Left, Right);
         }
         public override T Accept<T>(Visitor<T> visitor)
         {
-            throw new System.NotImplementedException();
+            return visitor.visitRelationExpression(this);
         }
     }
     
     public class Addition : Expression
     {
 
-        public Token Operation { get; }
+        public TokenType Operation { get; }
         public Expression Left { get; }
         public Expression Right { get; }
 
-        public Addition(Token operation, Expression left, Expression right)
+        public Addition(TokenType operation, Expression left, Expression right)
         {
             Operation = operation;
             Left = left;
@@ -51,7 +52,7 @@ public abstract class Expression
 
         public override string ToString()
         {
-            return string.Format("({0} {1} {2})", Operation.Type, Left, Right);
+            return string.Format("({0} {1} {2})", Operation, Left, Right);
         }
 
         public override T Accept<T>(Visitor<T> visitor)
@@ -63,11 +64,11 @@ public abstract class Expression
     public class Multiplication : Expression
     {
 
-        public Token Operation { get; }
+        public TokenType Operation { get; }
         public Expression Left { get; }
         public Expression Right { get; }
 
-        public Multiplication(Token operation, Expression left, Expression right)
+        public Multiplication(TokenType operation, Expression left, Expression right)
         {
             Operation = operation;
             Left = left;
@@ -76,7 +77,7 @@ public abstract class Expression
 
         public override string ToString()
         {
-            return string.Format("({0} {1} {2})", Operation.Type, Left, Right);
+            return string.Format("({0} {1} {2})", Operation, Left, Right);
         }
 
         public override T Accept<T>(Visitor<T> visitor)

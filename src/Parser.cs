@@ -143,12 +143,31 @@ public class Parser
                     default:
                         throw new Exception("wtf");
                 }
+            case IF:
+                index++;
+                return ifStatement();
             case RETURN:
                 index++;
                 return new Statement.Return(expression());
+            case BEGIN:
+                return block();
             default:
-                throw new Exception("unknown stmt");
+                throw new Exception("unknown stmt " + current);
         }
+    }
+
+    public Statement.If ifStatement()
+    {
+        var condition = expression();
+        match(THEN);
+        var thenStmt = statement();
+        Statement elseStmt = null;
+        if (matchIf(ELSE) != null)
+        {
+            elseStmt = statement();
+        }
+
+        return new Statement.If(condition, thenStmt, elseStmt);
     }
 
     // TODO identifers as strings vs objects
@@ -230,7 +249,7 @@ public class Parser
             index++;
 
             var right = simpleExpr();
-            return new Expression.Relation(relation, left, right);
+            return new Expression.Relation(relation.Type, left, right);
         }
 
         return left;
@@ -244,7 +263,7 @@ public class Parser
         {
             var addition = tokens[index];
             index++;
-            return new Expression.Addition(addition, left, simpleExpr());
+            return new Expression.Addition(addition.Type, left, simpleExpr());
         }
 
         return left;
@@ -257,7 +276,7 @@ public class Parser
         {
             var mult = tokens[index];
             index++;
-            return new Expression.Multiplication(mult, left, term());
+            return new Expression.Multiplication(mult.Type, left, term());
         }
 
         return left;
@@ -321,8 +340,12 @@ public class Parser
         {
             var expr = expression();
             arguments.Add(expr);
+            if (matchIf(RIGHT_PAREN) != null)
+            {
+                break;
+            }
+            match(COMMA);
         } while (tokens[index].Type != RIGHT_PAREN);
-        match(RIGHT_PAREN);
 
         return arguments;
     }

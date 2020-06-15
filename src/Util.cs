@@ -24,9 +24,9 @@ public class Util
     }
 
     // TODO move this elsewhere?
-    public static byte OpToIntegerInstruction(Token operation)
+    public static byte OpToIntegerInstruction(TokenType operation)
     {
-        switch (operation.Type)
+        switch (operation)
         {
             case PLUS:
                 return 0x6a;
@@ -38,6 +38,18 @@ public class Util
                 return 0x6d;
             case PERCENT:
                 return 0x6f;
+            case LESS:
+                return 0x48;
+            case LESS_EQ:
+                return 0x4C;
+            case GREATER:
+                return 0x4A;
+            case GREATER_EQ:
+                return 0x4E;
+            case EQUAL:
+                return 0x46;
+            case NOT_EQUAL:
+                return 0x47;
             default:
                 throw new Exception("not a operation" + operation);
         }
