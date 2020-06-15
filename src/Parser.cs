@@ -138,6 +138,7 @@ public class Parser
                 {
                     case LEFT_PAREN:
                         return new Statement.Call(functionCall());
+                    case LEFT_BRACKET:
                     case ASSIGN:
                         return assignment();
                     default:
@@ -171,7 +172,7 @@ public class Parser
     }
 
     // TODO identifers as strings vs objects
-    private Statement.Declarement varDeclarement()
+    private Statement varDeclarement()
     {
         // Consume the VAR
         advance();
@@ -186,18 +187,33 @@ public class Parser
         }
 
         match(COLON);
-        var type = match(IDENTIFIER);
-        
+        var type = tokens[index];
+
+        // TODO unspagethify array
+        if (type.Type == ARRAY)
+        {
+            index++;
+            match(LEFT_BRACKET);
+            // TODO check acualy if integer
+            var size = (Expression.Literal) factor();
+            match(RIGHT_BRACKET);
+
+            match(OF);
+            var arrayType = match(IDENTIFIER);
+            
+            return new Statement.ArrayDeclarement(arrayType.Type, (int) size.Value, identifiers);
+        }
+        match(IDENTIFIER);
         return new Statement.Declarement(type, identifiers);
     }
 
     private Statement.Assignment assignment()
     {
-        var ident = (string) advance().Content;
+        var variable = (Expression.Variable) handleIdentifier(tokens[index]);
         match(ASSIGN);
         var expr = expression();
 
-        return new Statement.Assignment(ident, expr);
+        return new Statement.Assignment(variable, expr);
     }
 
     private Statement write()
@@ -311,12 +327,21 @@ public class Parser
 
     private Expression handleIdentifier(Token current)
     {
-        if (lookahead().Type == LEFT_PAREN)
+        var next = lookahead();
+        if (next.Type == LEFT_PAREN)
         {
             return functionCall();
         }
+        if (next.Type == LEFT_BRACKET)
+        {
+            var identifier = advance();
+            match(LEFT_BRACKET);
+            var indexer = expression();
+            match(RIGHT_BRACKET);
+            return new Expression.Variable(identifier.Content.ToString(), indexer);
+        }
 
-        return new Expression.Variable(advance().Content.ToString());
+        return new Expression.Variable(advance().Content.ToString(), null);
     }
 
     private Expression.FunctionCall functionCall()

@@ -115,15 +115,47 @@ class Generator : Statement.Visitor<object>, Expression.Visitor<object>
         return null;
     }
 
+    public object VisitArrayDeclarementStatement(Statement.ArrayDeclarement stmt)
+    {
+        foreach (var ident in stmt.Identifiers)
+        {
+            var pointer = Util.LEB128encode(memoryPointer);
+
+            current.Locals++;
+            var index = environment.Declare(ident);
+            // store a placeholder 0 to the memory
+            addInstruction(0x41);
+            addInstruction(pointer);
+            
+            memoryPointer += 4 * stmt.Size;
+            addInstruction(I32_CONST);
+            addInstruction(Util.LEB128encode(0));
+
+            addInstruction(0x36, 0x02, 0x00);
+
+            addInstruction(I32_CONST);
+            addInstruction(pointer);
+            addInstruction(LOCAL_SET);
+            addInstruction(Util.LEB128encode(index));
+        }
+        return null;
+    }
+
     // TODO store pointer
     public object VisitAssignmentStatement(Statement.Assignment stmt)
     {
-        var pointer = Util.LEB128encode(memoryPointer);
-        memoryPointer += 4;
-        var index = Util.LEB128encode(environment.FindIndex(stmt.Identifier));
+        var index = Util.LEB128encode(environment.FindIndex(stmt.Variable.Identifier));
 
         addInstruction(LOCAL_GET);
         addInstruction(index);
+        if (stmt.Variable.Indexer != null)
+        {
+            stmt.Variable.Indexer.Accept(this);
+            addInstruction(I32_CONST);
+            addInstruction(4);
+            addInstruction(0x6c);
+            addInstruction(0x6a); // add index
+        }
 
         stmt.Expr.Accept(this);
 
@@ -213,6 +245,14 @@ class Generator : Statement.Visitor<object>, Expression.Visitor<object>
         var index = environment.FindIndex(expr.Identifier.ToString());
         addInstruction(LOCAL_GET);
         addInstruction(Util.LEB128encode(index));
+        if (expr.Indexer != null)
+        {
+            expr.Indexer.Accept(this);
+            addInstruction(I32_CONST);
+            addInstruction(4);
+            addInstruction(0x6c);
+            addInstruction(0x6a);     
+        }
         addInstruction(0x28, 0x02, 0x00); // load from memory
 
         return null;

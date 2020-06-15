@@ -10,6 +10,7 @@ public abstract class Statement
         T VisitBlockStatement(Statement.Block stmt);
         T VisitParameterStatement(Statement.Parameter stmt);
         T VisitDeclarementStatement(Statement.Declarement stmt);
+        T VisitArrayDeclarementStatement(Statement.ArrayDeclarement stmt);
         T VisitAssignmentStatement(Statement.Assignment stmt);
         T VisitReturnStatement(Statement.Return stmt);
         T VisitCallStatement(Statement.Call stmt);
@@ -89,14 +90,33 @@ public abstract class Statement
         }
     }
 
+    public class ArrayDeclarement : Statement
+    {
+        public TokenType Type { get; }
+        public int Size { get; }
+        public List<string> Identifiers { get; }
+
+        public ArrayDeclarement(TokenType type, int size, List<string> idents)
+        {
+            Type = type;
+            Size = size;
+            Identifiers = idents;
+        }
+
+        public override T Accept<T>(Visitor<T> visitor)
+        {
+            return visitor.VisitArrayDeclarementStatement(this);
+        }
+    }
+
     public class Assignment : Statement
     {
-        public string Identifier { get; }
+        public Expression.Variable Variable { get; }
         public Expression Expr { get; }
 
-        public Assignment(string ident, Expression expr)
+        public Assignment(Expression.Variable variable, Expression expr)
         {
-            Identifier = ident;
+            Variable = variable;
             Expr = expr;
         }
 

@@ -6,10 +6,10 @@ begin
 
     var next : integer;
 
-    if number % 2 = 0 then next := Calculate(number / 2, mem);
+    if number % 2 = 0 then next := Calculate(number / 2, mem)
     else next := Calculate(number * 3 + 1, mem);
 
-    mem[number] = next;
+    mem[number] := next;
 
     return number;
 end;

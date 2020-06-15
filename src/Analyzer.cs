@@ -46,12 +46,19 @@ class Analyzer : Statement.Visitor<object>, Expression.Visitor<object>
     return null;
   }
 
+
+  public object VisitArrayDeclarementStatement(Statement.ArrayDeclarement stmt)
+  {
+      return null;
+  }
+
   public object VisitAssignmentStatement(Statement.Assignment stmt)
   {
-    var type = stmt.Expr.Accept(this);
-    if (type.ToString() != variables[stmt.Identifier]) {
+    var exprType = stmt.Expr.Accept(this);
+    var varType = stmt.Variable.Accept(this);
+    if (exprType != varType) {
 
-      throw new Exception(string.Format("cannot assign {0} to {1}", type, variables[stmt.Identifier]));
+      throw new Exception(string.Format("cannot assign {0} to {1}", exprType, varType));
     }
     return null;
   }

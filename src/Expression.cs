@@ -111,10 +111,12 @@ public abstract class Expression
     public class Variable : Expression
     {   
         public string Identifier { get; }
+        public Expression Indexer { get; }
 
-        public Variable(string val)
+        public Variable(string val, Expression indexer)
         {
             Identifier = val;
+            Indexer = indexer;
         }
 
         public override string ToString()
