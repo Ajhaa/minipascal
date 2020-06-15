@@ -3,8 +3,8 @@ using System.Collections.Generic;
 
 class Analyzer : Statement.Visitor<object>, Expression.Visitor<object>
 {
-
   Dictionary<string, string> variables = new Dictionary<string, string>();
+  private Boolean returningBranch = false;
 
   public Analyzer(List<Statement.Function> stmts)
   {
@@ -56,7 +56,7 @@ class Analyzer : Statement.Visitor<object>, Expression.Visitor<object>
   {
     var exprType = stmt.Expr.Accept(this);
     var varType = stmt.Variable.Accept(this);
-    if (exprType != varType) {
+    if (exprType.ToString() != varType.ToString()) {
 
       throw new Exception(string.Format("cannot assign {0} to {1}", exprType, varType));
     }
@@ -68,9 +68,20 @@ class Analyzer : Statement.Visitor<object>, Expression.Visitor<object>
     return null;
   }
 
-
   public object VisitIfStatement(Statement.If stmt)
   {
+      // TODO fix returningBranch spaget
+      returningBranch = false;
+      stmt.Then.Accept(this);
+      var thenReturning = returningBranch;
+      returningBranch = false;
+      if (stmt.Else != null)
+      {
+        stmt.Else.Accept(this);
+      }
+
+      stmt.Returning = thenReturning && returningBranch;
+
       return null;
   }
 
@@ -81,6 +92,7 @@ class Analyzer : Statement.Visitor<object>, Expression.Visitor<object>
 
   public object VisitReturnStatement(Statement.Return stmt)
   {
+    returningBranch = true;
     return stmt.Expr.Accept(this);
   }
   public object VisitWriteStatement(Statement.Write stmt) { return null; }

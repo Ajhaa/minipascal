@@ -182,6 +182,13 @@ class Generator : Statement.Visitor<object>, Expression.Visitor<object>
         }
 
         addInstruction(0x0b); // end
+
+        // Add a dummy return value if all branches of if return a value
+        // This return value will never be reached, but wasm doesn't know it
+        if (stmt.Returning)
+        {
+            addInstruction(ZERO);
+        }
         return null;
     }
 

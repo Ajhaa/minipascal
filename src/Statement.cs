@@ -132,12 +132,14 @@ public abstract class Statement
         public Expression Condition { get; }
         public Statement Then { get; }
         public Statement Else { get; }
+        public bool Returning { get; set; }
 
         public If(Expression condition, Statement thenStmt, Statement elseStmt)
         {
             Condition = condition;
             Then = thenStmt;
             Else = elseStmt;
+            Returning = false;
         }
 
         public override T Accept<T>(Visitor<T> visitor)
