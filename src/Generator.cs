@@ -187,6 +187,10 @@ class Generator : Statement.Visitor<object>, Expression.Visitor<object>
 
     public object VisitWhileStatement(Statement.While stmt)
     {
+        // if statement to skip loop if conditions is not met
+        stmt.Condition.Accept(this);
+        addInstruction(0x04);
+        addInstruction(0x40);
         addInstruction(0x03); // loop
         addInstruction(0x40); // while returns void
         stmt.Body.Accept(this);
@@ -194,7 +198,8 @@ class Generator : Statement.Visitor<object>, Expression.Visitor<object>
         // addInstruction(0x45); // negate the condition
         addInstruction(0x0D); // break if negated condition
         addInstruction(ZERO); // TODO break only current 
-        addInstruction(0x0b); // end
+        addInstruction(0x0b); // end loop
+        addInstruction(0x0b); // end if statement
         return null;
     }
 
