@@ -1,6 +1,6 @@
 program Collatz;
 
-function Calculate (number : integer, var mem : array [] of integer) : integer;
+function Calculate (number : integer, var mem : array [100] of integer) : integer;
 begin
     if number = 1 then return 1;
 
@@ -15,14 +15,16 @@ begin
 end;
 
 begin
-    var memory : array [] of integer;
+    var memory : array [100] of integer;
 
     var i : integer;
     i := 2;
 
-    while i < 30 do
+    while i < 5 do
     begin
         Calculate(i, memory);
         i := i + 1;
     end;
+
+    write(memory[4])
 end.

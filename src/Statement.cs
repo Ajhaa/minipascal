@@ -16,6 +16,7 @@ public abstract class Statement
         T VisitCallStatement(Statement.Call stmt);
         T VisitWriteStatement(Statement.Write stmt);
         T VisitIfStatement(Statement.If stmt);
+        T VisitWhileStatement(Statement.While stmt);
     }
 
     public class Function : Statement
@@ -142,6 +143,23 @@ public abstract class Statement
         public override T Accept<T>(Visitor<T> visitor)
         {
             return visitor.VisitIfStatement(this);
+        }
+    }
+
+    public class While : Statement
+    {
+        public Expression Condition { get; }
+        public Statement Body { get; }
+
+        public While(Expression condition, Statement body)
+        {
+            Condition = condition;
+            Body = body;
+        } 
+
+        public override T Accept<T>(Visitor<T> visitor)
+        {
+            return visitor.VisitWhileStatement(this);
         }
     }
 

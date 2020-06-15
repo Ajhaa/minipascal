@@ -43,11 +43,13 @@ function read(offset) {
     return data.length;
 }
 
-function dispInt(val) {
+function dispInt(offset) {
+    let ints = new Uint32Array(new Uint8Array(memory.buffer, offset));
+    const val = Number(ints[0])
     console.log(">", val);
 }
 
-const js = { read: read, mem: memory, write: log, toString: intToString }
+const js = { read: read, mem: memory, write: dispInt, toString: intToString }
 const core = { memory }
 
 async function run() {

@@ -74,6 +74,11 @@ class Analyzer : Statement.Visitor<object>, Expression.Visitor<object>
       return null;
   }
 
+  public object VisitWhileStatement(Statement.While stmt)
+  {
+    return null;
+  }
+
   public object VisitReturnStatement(Statement.Return stmt)
   {
     return stmt.Expr.Accept(this);

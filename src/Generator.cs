@@ -185,6 +185,19 @@ class Generator : Statement.Visitor<object>, Expression.Visitor<object>
         return null;
     }
 
+    public object VisitWhileStatement(Statement.While stmt)
+    {
+        addInstruction(0x03); // loop
+        addInstruction(0x40); // while returns void
+        stmt.Body.Accept(this);
+        stmt.Condition.Accept(this);
+        // addInstruction(0x45); // negate the condition
+        addInstruction(0x0D); // break if negated condition
+        addInstruction(ZERO); // TODO break only current 
+        addInstruction(0x0b); // end
+        return null;
+    }
+
     public object VisitReturnStatement(Statement.Return stmt)
     {
         stmt.Expr.Accept(this);
@@ -236,6 +249,7 @@ class Generator : Statement.Visitor<object>, Expression.Visitor<object>
             memoryPointer += expr.Value.ToString().Length + 1; 
             return null;
         }
+        
         addInstruction(0x41);
         addInstruction(Util.LEB128encode((int)expr.Value));
         return null;

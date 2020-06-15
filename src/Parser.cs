@@ -147,6 +147,9 @@ public class Parser
             case IF:
                 index++;
                 return ifStatement();
+            case WHILE:
+                index++;
+                return whileStatement();
             case RETURN:
                 index++;
                 return new Statement.Return(expression());
@@ -169,6 +172,13 @@ public class Parser
         }
 
         return new Statement.If(condition, thenStmt, elseStmt);
+    }
+
+    public Statement.While whileStatement()
+    {
+        var condition = expression();
+        match(DO);
+        return new Statement.While(condition, statement());
     }
 
     // TODO identifers as strings vs objects
