@@ -44,9 +44,12 @@ function read(offset) {
 }
 
 function dispInt(offset) {
-    let ints = new Uint32Array(new Uint8Array(memory.buffer, offset));
-    const val = Number(ints[0])
-    console.log(">", val);
+    let bytes = new Uint8Array(memory.buffer, offset);
+    let int = bytes[0];
+    int += bytes[1] * 256;
+    int += bytes[2] * 256 ** 2;
+    int += bytes[3] * 256 ** 3
+    console.log(">", int);
 }
 
 const js = { read: read, mem: memory, write: dispInt, toString: intToString }

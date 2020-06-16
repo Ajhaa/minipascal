@@ -62,7 +62,7 @@ class Analyzer : Statement.Visitor<object>, Expression.Visitor<object>
     }
     return null;
   }
-  public object VisitCallStatement(Statement.Call stmt)
+  public object VisitExpressionStatement(Statement.ExpressionStatement stmt)
   {
     stmt.Expr.Accept(this);
     return null;

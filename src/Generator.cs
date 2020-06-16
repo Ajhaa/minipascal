@@ -163,7 +163,7 @@ class Generator : Statement.Visitor<object>, Expression.Visitor<object>
 
         return null;
     }
-    public object VisitCallStatement(Statement.Call stmt) { 
+    public object VisitExpressionStatement(Statement.ExpressionStatement stmt) { 
         stmt.Expr.Accept(this);
         return null;
     }
@@ -202,7 +202,6 @@ class Generator : Statement.Visitor<object>, Expression.Visitor<object>
         addInstruction(0x40); // while returns void
         stmt.Body.Accept(this);
         stmt.Condition.Accept(this);
-        // addInstruction(0x45); // negate the condition
         addInstruction(0x0D); // break if negated condition
         addInstruction(ZERO); // TODO break only current 
         addInstruction(0x0b); // end loop

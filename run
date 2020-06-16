@@ -1,0 +1,1 @@
+curl -s -d "$(cat $1)" -H "Content-Type: text/plain" -X POST http://localhost:3001/ --output pascal.wasm && node node_glue.js

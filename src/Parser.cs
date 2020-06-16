@@ -137,7 +137,7 @@ public class Parser
                 switch(lookahead().Type)
                 {
                     case LEFT_PAREN:
-                        return new Statement.Call(functionCall());
+                        return new Statement.ExpressionStatement(functionCall());
                     case LEFT_BRACKET:
                     case ASSIGN:
                         return assignment();

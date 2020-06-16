@@ -13,7 +13,7 @@ public abstract class Statement
         T VisitArrayDeclarementStatement(Statement.ArrayDeclarement stmt);
         T VisitAssignmentStatement(Statement.Assignment stmt);
         T VisitReturnStatement(Statement.Return stmt);
-        T VisitCallStatement(Statement.Call stmt);
+        T VisitExpressionStatement(Statement.ExpressionStatement stmt);
         T VisitWriteStatement(Statement.Write stmt);
         T VisitIfStatement(Statement.If stmt);
         T VisitWhileStatement(Statement.While stmt);
@@ -180,18 +180,18 @@ public abstract class Statement
         }
     }
 
-    public class Call : Statement
+    public class ExpressionStatement : Statement
     {
         public Expression.FunctionCall Expr;
 
-        public Call(Expression.FunctionCall expr)
+        public ExpressionStatement(Expression.FunctionCall expr)
         {
             Expr = expr;
         }
 
         public override T Accept<T>(Visitor<T> visitor)
         {
-            return visitor.VisitCallStatement(this);
+            return visitor.VisitExpressionStatement(this);
         }
     }
 

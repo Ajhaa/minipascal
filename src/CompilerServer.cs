@@ -21,13 +21,13 @@ class CompilerServer
             var reader = new System.IO.StreamReader(body, encoding);
             
             var code = reader.ReadToEnd();
-            Console.WriteLine("JEE");
-            Console.WriteLine(code);
 
             var tokens = new Scanner(code).Scan();
 
             var parser = new Parser(tokens);
             var program = parser.Parse();
+
+            new Analyzer(program);
 
             var wasm = new Generator(program).Generate();
             var binary = new WASMwriter(wasm).Write();
