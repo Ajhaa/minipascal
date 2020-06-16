@@ -196,6 +196,12 @@ public class Parser
             identifiers.Add((string) match(IDENTIFIER).Content);
         }
 
+        if (tokens[index].Type == ASSIGN)
+        {
+            index++;
+            var assigner = expression();
+            return new Statement.Declarement(null, identifiers, assigner);
+        }
         match(COLON);
         var type = tokens[index];
 
@@ -204,7 +210,7 @@ public class Parser
         {
             index++;
             match(LEFT_BRACKET);
-            // TODO check acualy if integer
+            // TODO check acualy if integer (in analyzer?)
             var size = (Expression.Literal) factor();
             match(RIGHT_BRACKET);
 
@@ -214,7 +220,7 @@ public class Parser
             return new Statement.ArrayDeclarement(arrayType.Type, (int) size.Value, identifiers);
         }
         match(IDENTIFIER);
-        return new Statement.Declarement(type, identifiers);
+        return new Statement.Declarement(type, identifiers, null);
     }
 
     private Statement.Assignment assignment()

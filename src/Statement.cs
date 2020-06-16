@@ -78,11 +78,13 @@ public abstract class Statement
     {
         public Token Type { get; }
         public List<string> Identifiers { get; }
+        public Expression Assigner { get; }
 
-        public Declarement(Token type, List<string> idents)
+        public Declarement(Token type, List<string> idents, Expression assigner)
         {
             Type = type;
             Identifiers = idents;
+            Assigner = assigner;
         }
 
         public override T Accept<T>(Visitor<T> visitor)

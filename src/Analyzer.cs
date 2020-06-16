@@ -38,10 +38,18 @@ class Analyzer : Statement.Visitor<object>, Expression.Visitor<object>
   }
   public object VisitDeclarementStatement(Statement.Declarement stmt)
   {
-    // TODO all identifiers
+    string type = null;
+    if (stmt.Assigner != null)
+    {
+      type = stmt.Assigner.Accept(this).ToString();
+    }
+    else
+    {
+      type = stmt.Type.Content.ToString();
+    }
     foreach (var ident in stmt.Identifiers)
     {
-      variables.Add(ident, stmt.Type.Content.ToString());
+      variables.Add(ident, type);
     }
     return null;
   }
@@ -49,7 +57,7 @@ class Analyzer : Statement.Visitor<object>, Expression.Visitor<object>
 
   public object VisitArrayDeclarementStatement(Statement.ArrayDeclarement stmt)
   {
-      return null;
+    return null;
   }
 
   public object VisitAssignmentStatement(Statement.Assignment stmt)

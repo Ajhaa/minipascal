@@ -94,18 +94,19 @@ class Generator : Statement.Visitor<object>, Expression.Visitor<object>
         foreach (var ident in stmt.Identifiers)
         {
             var pointer = Util.LEB128encode(memoryPointer);
-
+            memoryPointer += 4;
             current.Locals++;
             var index = environment.Declare(ident);
-            // store a placeholder 0 to the memory
-            addInstruction(0x41);
-            addInstruction(pointer);
+            // if declarement has assignment, evaluate it
+            if (stmt.Assigner != null)
+            {
+                addInstruction(0x41);
+                addInstruction(pointer);
             
-            memoryPointer += 4;
-            addInstruction(I32_CONST);
-            addInstruction(Util.LEB128encode(0));
+                stmt.Assigner.Accept(this);
 
-            addInstruction(0x36, 0x02, 0x00);
+                addInstruction(0x36, 0x02, 0x00);
+            }
 
             addInstruction(I32_CONST);
             addInstruction(pointer);
@@ -123,6 +124,7 @@ class Generator : Statement.Visitor<object>, Expression.Visitor<object>
 
             current.Locals++;
             var index = environment.Declare(ident);
+            // TODO is this needed
             // store a placeholder 0 to the memory
             addInstruction(0x41);
             addInstruction(pointer);
@@ -141,7 +143,6 @@ class Generator : Statement.Visitor<object>, Expression.Visitor<object>
         return null;
     }
 
-    // TODO store pointer
     public object VisitAssignmentStatement(Statement.Assignment stmt)
     {
         var index = Util.LEB128encode(environment.FindIndex(stmt.Variable.Identifier));
