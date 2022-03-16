@@ -12,21 +12,22 @@ public abstract class Statement
         T VisitDeclarementStatement(Statement.Declarement stmt);
         T VisitArrayDeclarementStatement(Statement.ArrayDeclarement stmt);
         T VisitAssignmentStatement(Statement.Assignment stmt);
-        T VisitReturnStatement(Statement.Return stmt);
+        T VisitReturnStatement(Statement.Return stmt);   
         T VisitExpressionStatement(Statement.ExpressionStatement stmt);
         T VisitWriteStatement(Statement.Write stmt);
         T VisitIfStatement(Statement.If stmt);
         T VisitWhileStatement(Statement.While stmt);
+        T VisitAssertStatement(Statement.Assert stmt);
     }
 
     public class Function : Statement
     {
         public string Identifier { get; }
         public List<Statement.Parameter> Parameters { get; }
-        public Token ReturnValue { get; }
+        public string ReturnValue { get; }
         public Statement.Block Body { get; }
 
-        public Function(string id, List<Statement.Parameter> parameters, Token retVal, Statement.Block body)
+        public Function(string id, List<Statement.Parameter> parameters, string retVal, Statement.Block body)
         {
             Identifier = id;
             Parameters = parameters;
@@ -179,6 +180,21 @@ public abstract class Statement
         public override T Accept<T>(Visitor<T> visitor)
         {
             return visitor.VisitReturnStatement(this);
+        }
+    }
+
+    public class Assert : Statement
+    {
+        public Expression Expr { get; }
+
+        public Assert(Expression expr)
+        {
+            Expr = expr;
+        }
+
+        public override T Accept<T>(Visitor<T> visitor)
+        {
+            return visitor.VisitAssertStatement(this);
         }
     }
 

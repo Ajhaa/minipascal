@@ -8,6 +8,11 @@ class Analyzer : Statement.Visitor<object>, Expression.Visitor<object>
 
   public Analyzer(List<Statement.Function> stmts)
   {
+    variables.Add("write", null);
+    foreach (var stmt in stmts)
+    {
+      variables.Add(stmt.Identifier, stmt.ReturnValue);
+    }
     foreach (var stmt in stmts)
     {
       stmt.Accept(this);
@@ -26,7 +31,7 @@ class Analyzer : Statement.Visitor<object>, Expression.Visitor<object>
   {
     foreach (var item in stmt.Statements)
     {
-        item.Accept(this);
+      item.Accept(this);
     }
     return null;
   }
@@ -64,7 +69,8 @@ class Analyzer : Statement.Visitor<object>, Expression.Visitor<object>
   {
     var exprType = stmt.Expr.Accept(this);
     var varType = stmt.Variable.Accept(this);
-    if (exprType.ToString() != varType.ToString()) {
+    if (exprType.ToString() != varType.ToString())
+    {
 
       throw new Exception(string.Format("cannot assign {0} to {1}", exprType, varType));
     }
@@ -78,19 +84,19 @@ class Analyzer : Statement.Visitor<object>, Expression.Visitor<object>
 
   public object VisitIfStatement(Statement.If stmt)
   {
-      // TODO fix returningBranch spaget
-      returningBranch = false;
-      stmt.Then.Accept(this);
-      var thenReturning = returningBranch;
-      returningBranch = false;
-      if (stmt.Else != null)
-      {
-        stmt.Else.Accept(this);
-      }
+    // TODO fix returningBranch spaget
+    returningBranch = false;
+    stmt.Then.Accept(this);
+    var thenReturning = returningBranch;
+    returningBranch = false;
+    if (stmt.Else != null)
+    {
+      stmt.Else.Accept(this);
+    }
 
-      stmt.Returning = thenReturning && returningBranch;
+    stmt.Returning = thenReturning && returningBranch;
 
-      return null;
+    return null;
   }
 
   public object VisitWhileStatement(Statement.While stmt)
@@ -103,11 +109,16 @@ class Analyzer : Statement.Visitor<object>, Expression.Visitor<object>
     returningBranch = true;
     return stmt.Expr.Accept(this);
   }
+
+  public object VisitAssertStatement(Statement.Assert stmt)
+  {
+    return null;
+  }
   public object VisitWriteStatement(Statement.Write stmt) { return null; }
 
   public object visitRelationExpression(Expression.Relation expr)
   {
-      return null;
+    return null;
   }
 
   // TODO plus vs minus vs OR
@@ -116,8 +127,9 @@ class Analyzer : Statement.Visitor<object>, Expression.Visitor<object>
     var left = expr.Left.Accept(this);
     var right = expr.Right.Accept(this);
 
-    if (left != right) {
-      throw new Exception("Cannot add different types");
+    if (left.ToString() != right.ToString())
+    {
+      throw new Exception(string.Format("Cannot add {0} to {1}", left, right));
     }
 
     return left;
@@ -129,7 +141,8 @@ class Analyzer : Statement.Visitor<object>, Expression.Visitor<object>
     var left = expr.Left.Accept(this);
     var right = expr.Right.Accept(this);
 
-    if (left != right) {
+    if (left.ToString() != right.ToString())
+    {
       throw new Exception("Cannot multiply different types");
     }
 
@@ -146,6 +159,6 @@ class Analyzer : Statement.Visitor<object>, Expression.Visitor<object>
 
   public object visitCallExpression(Expression.FunctionCall expr)
   {
-    return null;
+    return variables[expr.Identifier];
   }
 }

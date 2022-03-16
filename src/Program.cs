@@ -20,17 +20,20 @@ namespace minipascal
 
             new Analyzer(program);
 
-            var wasm = new Generator(program).Generate();
-            var binary = new WASMwriter(wasm).Write();
+            var cProgram = new C.Generator(program).Generate();
+            var fileString = new C.CWriter(cProgram).Write();
 
-            var bWriter = new BinaryWriter(File.Open("pascal.wasm", FileMode.Create));
-            
-            foreach (var b in binary)
-            {
-                bWriter.Write(b);
-            }
+            File.WriteAllText("pascal.c", fileString);
+            // var binary = new C.CWriter(cProgram).Write();
 
-            bWriter.Close();
+            // var bWriter = new BinaryWriter(File.Open("pascal.c", FileMode.Create));
+
+            // foreach (var b in binary)
+            // {
+            //     bWriter.Write(b);
+            // }
+
+            // bWriter.Close();
         }
     }
 }

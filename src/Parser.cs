@@ -61,7 +61,7 @@ public class Parser
     public List<Statement.Function> Parse()
     {
         match(PROGRAM);
-        // TODO use the program name 
+        // TODO use the program name
         match(IDENTIFIER);
         match(SEMICOLON);
         while (index < tokens.Count)
@@ -84,12 +84,12 @@ public class Parser
         advance();
         var id = match(IDENTIFIER);
         var parms = parameters();
-        Token returnType = null;
+        string returnType = null;
 
         if (type == FUNCTION)
         {
             match(COLON);
-            returnType = match(IDENTIFIER);
+            returnType = match(IDENTIFIER).Content.ToString();
         }
         match(SEMICOLON);
 
@@ -150,6 +150,9 @@ public class Parser
             case WHILE:
                 index++;
                 return whileStatement();
+            case ASSERT:
+                index++;
+                return assertStatement();
             case RETURN:
                 index++;
                 return new Statement.Return(expression());
@@ -181,6 +184,14 @@ public class Parser
         return new Statement.While(condition, statement());
     }
 
+    public Statement.Assert assertStatement()
+    {
+        match(LEFT_PAREN);
+        var expr = expression();
+        match(RIGHT_PAREN);
+        return new Statement.Assert(expr);
+    }
+
     // TODO identifers as strings vs objects
     private Statement varDeclarement()
     {
@@ -189,7 +200,7 @@ public class Parser
 
         var identifiers = new List<string>();
         identifiers.Add((string) match(IDENTIFIER).Content);
-        
+
         while (tokens[index].Type == COMMA)
         {
             advance();
@@ -216,7 +227,7 @@ public class Parser
 
             match(OF);
             var arrayType = match(IDENTIFIER);
-            
+
             return new Statement.ArrayDeclarement(arrayType.Type, (int) size.Value, identifiers);
         }
         match(IDENTIFIER);
@@ -274,44 +285,52 @@ public class Parser
 
     private Expression expression()
     {
-        var left = simpleExpr();
+        var expr = simpleExpr();
         if (reserved.IsRelation(tokens[index]))
         {
             var relation = tokens[index];
             index++;
 
             var right = simpleExpr();
-            return new Expression.Relation(relation.Type, left, right);
+            expr = new Expression.Relation(relation.Type, expr, right);
         }
 
-        return left;
+        return expr;
     }
 
     //TODO sign
     private Expression simpleExpr()
-    { 
-        var left = term();
-        if (reserved.IsAddition(tokens[index]))
+    {
+        var expr = term();
+        while (reserved.IsAddition(tokens[index]))
         {
             var addition = tokens[index];
             index++;
-            return new Expression.Addition(addition.Type, left, simpleExpr());
+            expr = new Expression.Addition(addition.Type, expr, term());
         }
 
-        return left;
+        return expr;
     }
 
     private Expression term()
     {
-        var left = factor();
-        if (reserved.IsMultiplication(tokens[index]))
-        {
+        // var left = factor();
+        // if (reserved.IsMultiplication(tokens[index]))
+        // {
+        //     var mult = tokens[index];
+        //     index++;
+        //     return new Expression.Multiplication(mult.Type, left, term());
+        // }
+
+        // return left;
+        var expr = factor();
+        while (reserved.IsMultiplication(tokens[index])) {
             var mult = tokens[index];
             index++;
-            return new Expression.Multiplication(mult.Type, left, term());
+            expr = new Expression.Multiplication(mult.Type, expr, factor());
         }
 
-        return left;
+        return expr;
     }
 
     // TODO implement <factor>.size

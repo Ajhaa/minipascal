@@ -54,4 +54,35 @@ public class Util
                 throw new Exception("not a operation" + operation);
         }
     }
+
+    public static string OpToC(TokenType operation)
+    {
+        switch (operation)
+        {
+            case PLUS:
+                return "+";
+            case MINUS:
+                return "-";
+            case STAR:
+                return "*";
+            case SLASH:
+                return "/";
+            case PERCENT:
+                return "%";
+            case LESS:
+                return "<";
+            case LESS_EQ:
+                return "<=";
+            case GREATER:
+                return ">";
+            case GREATER_EQ:
+                return ">=";
+            case EQUAL:
+                return "==";
+            case NOT_EQUAL:
+                return "!=";
+            default:
+                throw new Exception("not a operation" + operation);
+        }
+    }
 }

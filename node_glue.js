@@ -67,4 +67,4 @@ async function run() {
     });
 }
 
-run().catch(e => console.error("Error:", e));
+run();

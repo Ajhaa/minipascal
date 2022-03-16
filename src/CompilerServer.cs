@@ -19,7 +19,7 @@ class CompilerServer
             var body = request.InputStream;
             var encoding = request.ContentEncoding;
             var reader = new System.IO.StreamReader(body, encoding);
-            
+
             var code = reader.ReadToEnd();
 
             var tokens = new Scanner(code).Scan();
@@ -29,8 +29,8 @@ class CompilerServer
 
             new Analyzer(program);
 
-            var wasm = new Generator(program).Generate();
-            var binary = new WASMwriter(wasm).Write();
+            var wasm = new WASM.Generator(program).Generate();
+            var binary = new WASM.WASMwriter(wasm).Write();
 
             // Obtain a response object.
             HttpListenerResponse response = context.Response;

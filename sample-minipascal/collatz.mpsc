@@ -8,9 +8,8 @@ begin
 end;
 
 begin
-    var i, result, longest : integer;
-    i := 1;
-    longest := 0;
+    var result, longest := 0;
+    var i := 1;
     while i < 10000 do begin
         result := Calculate(i, 0);
         if result > longest then longest := result;
