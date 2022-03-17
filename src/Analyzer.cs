@@ -101,6 +101,9 @@ class Analyzer : Statement.Visitor<object>, Expression.Visitor<object>
 
   public object VisitWhileStatement(Statement.While stmt)
   {
+    // Return analysis here?
+    stmt.Condition.Accept(this);
+    stmt.Body.Accept(this);
     return null;
   }
 

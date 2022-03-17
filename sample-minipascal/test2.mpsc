@@ -1,0 +1,12 @@
+program Test;
+
+begin
+    var z : integer;
+    z := 6*7;
+
+    while z > 0 do begin
+        writeln(z);
+        z := z - 1;
+    end;
+
+end.

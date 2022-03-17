@@ -15,5 +15,5 @@ begin
         if result > longest then longest := result;
         i := i + 1;
     end;
-    write(longest);
+    writeln(longest);
 end.

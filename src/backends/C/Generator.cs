@@ -32,14 +32,22 @@ namespace C
             return cProgram;
         }
 
-        private void addInstruction(params string[] instructions)
+        private void addStatement(params string[] stmts)
         {
-            current.Body.AddRange(instructions);
+            foreach (var stmt in stmts)
+            {
+                current.Body.Add(stmt + ";");
+            }
         }
 
         private void addInstruction(IEnumerable<string> instructions)
         {
             current.Body.AddRange(instructions);
+        }
+
+        private void addLine(params string[] lines)
+        {
+            current.Body.AddRange(lines);
         }
 
         public object VisitFunctionStatement(Statement.Function stmt)
@@ -96,25 +104,19 @@ namespace C
                 current.Locals++;
                 var index = environment.Declare(ident);
                 // if declarement has assignment, evaluate it
-                var type = Util.TypeToCType(stmt.Type);
 
                 if (stmt.Assigner != null)
                 {
-                    // string tempVariable = "__temp_" + tempVariableIndex++;
-                    // // TODO type
-                    // addInstruction("int " + tempVariable + ";");
-                    //tempVariableStack.Push(tempVariable);
+                    var type = Util.TypeToCType(stmt.Assigner.Type);
                     var result_temp = stmt.Assigner.Accept(this);
 
-                    addInstruction(type +" "+ ident + " = " + result_temp);
-                } else {
-                    addInstruction(type + " " + ident);
+                    addStatement(type + " " + ident + " = " + result_temp);
                 }
-
-                // addInstruction(I32_CONST);
-                // addInstruction(pointer);
-                // addInstruction(LOCAL_SET);
-                // addInstruction(Util.LEB128encode(index));
+                else
+                {
+                    var type = Util.TypeToCType(stmt.Type);
+                    addStatement(type + " " + ident);
+                }
             }
             return null;
         }
@@ -128,7 +130,7 @@ namespace C
         {
             var result_temp = stmt.Expr.Accept(this);
             // TODO indexing
-            addInstruction(stmt.Variable.Identifier + " = " + result_temp);
+            addStatement(stmt.Variable.Identifier + " = " + result_temp);
             return null;
         }
 
@@ -136,18 +138,18 @@ namespace C
         {
             if (stmt.Expr == null)
             {
-                addInstruction("return");
+                addStatement("return");
                 return null;
             }
             var res = stmt.Expr.Accept(this);
-            addInstruction("return " + res);
+            addStatement("return " + res);
             return null;
         }
 
         object Statement.Visitor<object>.VisitExpressionStatement(Statement.ExpressionStatement stmt)
         {
             var result = stmt.Expr.Accept(this);
-            addInstruction(result);
+            addStatement(result);
             return null;
         }
 
@@ -156,14 +158,40 @@ namespace C
             throw new NotImplementedException();
         }
 
+        //TODO lables and others without ;
         object Statement.Visitor<object>.VisitIfStatement(Statement.If stmt)
         {
-            throw new NotImplementedException();
+            var cond = stmt.Condition.Accept(this);
+            var elseLabel = "label_" + tempVariableIndex++;
+            var endLabel = "label_" + tempVariableIndex++;
+
+            addStatement(string.Format("if ({0} == 0) goto {1}", cond, elseLabel));
+            stmt.Then.Accept(this);
+            addStatement("goto " + endLabel);
+
+            addStatement(elseLabel + ":");
+            if (stmt.Else != null)
+            {
+                stmt.Else.Accept(this);
+            }
+
+            addStatement(endLabel + ":");
+            return null;
         }
 
         object Statement.Visitor<object>.VisitWhileStatement(Statement.While stmt)
         {
-            throw new NotImplementedException();
+            var startLabel = "label_" + tempVariableIndex++;
+            var endLabel = "label_" + tempVariableIndex++;
+            addStatement(startLabel + ":");
+            var cond = stmt.Condition.Accept(this);
+
+            addStatement(string.Format("if ({0} == 0) goto {1}", cond, endLabel));
+            stmt.Body.Accept(this);
+            addStatement("goto " + startLabel);
+
+            addStatement(endLabel + ":");
+            return null;
         }
 
         object Statement.Visitor<object>.VisitAssertStatement(Statement.Assert stmt)
@@ -178,7 +206,26 @@ namespace C
             var rTemp1 = expr.Left.Accept(this);
             var rTemp2 = expr.Right.Accept(this);
 
-            addInstruction("int " + tempVariable + " = " + rTemp1 + Util.OpToC(expr.Operation) + rTemp2);
+            if (expr.Type == "integer")
+            {
+                addStatement(
+                    string.Format("int {0} = {1} {2} {3}", tempVariable, rTemp1, Util.OpToC(expr.Operation), rTemp2)
+                );
+            }
+            else if (expr.Type == "string")
+            {
+                // TODO handle string + integer
+                var lenTemp = "__temp_" + tempVariableIndex++;
+                addStatement(
+                    string.Format("size_t {0} = strlen({1}) + strlen({2})", lenTemp, rTemp1, rTemp2),
+                    string.Format("{0} = {0} + 1", lenTemp),
+                    string.Format("char* {0} = malloc({1})", tempVariable, lenTemp),
+                    string.Format("strcat({0},{1})", tempVariable, rTemp1, rTemp2),
+                    string.Format("strcat({0},{2})", tempVariable, rTemp1, rTemp2)
+                );
+            } else {
+                throw new Exception("Addition expression wrong type " + expr.Type);
+            }
             return tempVariable;
         }
 
@@ -190,7 +237,7 @@ namespace C
             var rTemp1 = expr.Left.Accept(this);
             var rTemp2 = expr.Right.Accept(this);
 
-            addInstruction("int " + tempVariable + " = " + rTemp1 + Util.OpToC(expr.Operation) + rTemp2);
+            addStatement("int " + tempVariable + " = " + rTemp1 + Util.OpToC(expr.Operation) + rTemp2);
             return tempVariable;
         }
 
@@ -218,16 +265,21 @@ namespace C
             {
                 // TODO multiple params
                 var format = "%d";
-                if (expr.Arguments[0].Type == "string") {
+                if (expr.Arguments[0].Type == "string")
+                {
                     format = "%s";
-                } else if (expr.Arguments[0].Type == "Boolean") {
+                }
+                else if (expr.Arguments[0].Type == "Boolean")
+                {
                     format = "%s";
                 }
 
                 var target = expr.Arguments[0].Accept(this);
 
                 return string.Format("printf(\"{0}\\n\", {1})", format, target);
-            } else {
+            }
+            else
+            {
                 var args = new List<string>();
                 // TODO pass by ref
                 foreach (var arg in expr.Arguments)
@@ -237,12 +289,17 @@ namespace C
 
                 return string.Format("{0}({1})", expr.Identifier, string.Join(",", args));
             }
-            throw new NotImplementedException();
         }
 
         string Expression.Visitor<string>.visitRelationExpression(Expression.Relation expr)
         {
-            throw new NotImplementedException();
+            string tempVariable = "__temp_" + tempVariableIndex++;
+
+            var rTemp1 = expr.Left.Accept(this);
+            var rTemp2 = expr.Right.Accept(this);
+
+            addStatement("bool " + tempVariable + " = " + rTemp1 + Util.OpToC(expr.Operation) + rTemp2);
+            return tempVariable;
         }
     }
 }

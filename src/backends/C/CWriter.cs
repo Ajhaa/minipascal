@@ -38,8 +38,9 @@ namespace C
         private void generateIncludes()
         {
             cFile += "#include <stdio.h>\n";
+            cFile += "#include <stdlib.h>\n";
             cFile += "#include <string.h>\n";
-
+            cFile += "#include <stdbool.h>\n";
         }
 
         // TODO fix length stuff
@@ -73,7 +74,7 @@ namespace C
 
                 foreach (var stmt in func.Body)
                 {
-                    cFile += stmt + ';' +'\n';
+                    cFile += stmt +'\n';
                 }
 
                 cFile += "}\n";

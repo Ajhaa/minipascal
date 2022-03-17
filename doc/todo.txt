@@ -1,1 +1,6 @@
+Addition of differing types, type of that statement. (Seems to be not necessary)
+Real type.
 Use blocks with functions correctly
+Cleanup generator. Local counts are probably not useful.
+Type is tokenType somewhere, string in other places
+Returns in ifs generate unreachable labels.
