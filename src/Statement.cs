@@ -100,11 +100,11 @@ public abstract class Statement
 
     public class ArrayDeclarement : Statement
     {
-        public TokenType Type { get; }
+        public Token Type { get; }
         public int Size { get; }
         public List<string> Identifiers { get; }
 
-        public ArrayDeclarement(TokenType type, int size, List<string> idents)
+        public ArrayDeclarement(Token type, int size, List<string> idents)
         {
             Type = type;
             Size = size;

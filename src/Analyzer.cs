@@ -9,6 +9,8 @@ class Analyzer : Statement.Visitor<object>, Expression.Visitor<object>
   public Analyzer(List<Statement.Function> stmts)
   {
     variables.Add("writeln", null);
+    variables.Add("read", null);
+
     foreach (var stmt in stmts)
     {
       variables.Add(stmt.Identifier, stmt.ReturnValue);
@@ -62,6 +64,11 @@ class Analyzer : Statement.Visitor<object>, Expression.Visitor<object>
 
   public object VisitArrayDeclarementStatement(Statement.ArrayDeclarement stmt)
   {
+    var type = stmt.Type.Content.ToString();
+    foreach (var ident in stmt.Identifiers)
+    {
+      variables.Add(ident, type);
+    }
     return null;
   }
 
@@ -182,4 +189,11 @@ class Analyzer : Statement.Visitor<object>, Expression.Visitor<object>
 
     return variables[expr.Identifier];
   }
+
+    object Expression.Visitor<object>.visitSizeExpression(Expression.Size expr)
+    {
+        var type = expr.Expr.Accept(this);
+        expr.Type = type.ToString();
+        return type;
+    }
 }

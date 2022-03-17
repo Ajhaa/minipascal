@@ -335,6 +335,11 @@ namespace WASM
             addInstruction(Util.LEB128encode(index));
             return null;
         }
+
+        object Expression.Visitor<object>.visitSizeExpression(Expression.Size expr)
+        {
+            throw new NotImplementedException();
+        }
     }
 
 }

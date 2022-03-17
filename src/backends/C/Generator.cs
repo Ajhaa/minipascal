@@ -20,6 +20,7 @@ namespace C
         {
             this.program = program;
             functions.Declare("writeln");
+            functions.Declare("read");
         }
 
         public CProgram Generate()
@@ -40,14 +41,19 @@ namespace C
             }
         }
 
-        private void addInstruction(IEnumerable<string> instructions)
-        {
-            current.Body.AddRange(instructions);
-        }
-
         private void addLine(params string[] lines)
         {
             current.Body.AddRange(lines);
+        }
+
+        private string getTempVar()
+        {
+            return "__temp_" + tempVariableIndex++;
+        }
+
+        private string getTempVar(string template)
+        {
+            return template + tempVariableIndex++;
         }
 
         public object VisitFunctionStatement(Statement.Function stmt)
@@ -102,7 +108,7 @@ namespace C
             foreach (var ident in stmt.Identifiers)
             {
                 current.Locals++;
-                var index = environment.Declare(ident);
+                environment.Declare(ident);
                 // if declarement has assignment, evaluate it
 
                 if (stmt.Assigner != null)
@@ -123,14 +129,36 @@ namespace C
 
         object Statement.Visitor<object>.VisitArrayDeclarementStatement(Statement.ArrayDeclarement stmt)
         {
-            throw new NotImplementedException();
+            foreach (var ident in stmt.Identifiers)
+            {
+                current.Locals++;
+                environment.Declare(ident);
+
+                var size = stmt.Size;
+                var type = Util.TypeToCType(stmt.Type);
+                // TODO make a struct to save length
+                addStatement(string.Format("{0}* {1} = malloc(sizeof({0}) * {2})", type, ident, size));
+            }
+            return null;
         }
 
         object Statement.Visitor<object>.VisitAssignmentStatement(Statement.Assignment stmt)
         {
             var result_temp = stmt.Expr.Accept(this);
-            // TODO indexing
-            addStatement(stmt.Variable.Identifier + " = " + result_temp);
+            // // TODO indexing
+            // if (stmt.Variable.Indexer != null)
+            // {
+            //     var indexer = stmt.Variable.Indexer.Accept(this);
+            //     addStatement(return string.Format("{0}[{1}]", expr.Identifier, indexer));
+
+            // }
+            // else
+            // {
+            //     addStatement(stmt.Variable.Identifier + " = " + result_temp);
+            // }
+
+            var target = stmt.Variable.Accept(this);
+            addStatement(target + " = " + result_temp);
             return null;
         }
 
@@ -223,7 +251,9 @@ namespace C
                     string.Format("strcat({0},{1})", tempVariable, rTemp1, rTemp2),
                     string.Format("strcat({0},{2})", tempVariable, rTemp1, rTemp2)
                 );
-            } else {
+            }
+            else
+            {
                 throw new Exception("Addition expression wrong type " + expr.Type);
             }
             return tempVariable;
@@ -255,6 +285,11 @@ namespace C
         string Expression.Visitor<string>.visitVariableExpression(Expression.Variable expr)
         {
             // TODO arrayThing??
+            if (expr.Indexer != null)
+            {
+                var indexer = expr.Indexer.Accept(this);
+                return string.Format("{0}[{1}]", expr.Identifier, indexer);
+            }
             // TODO handle the pass as ref case var*
             return expr.Identifier;
         }
@@ -263,6 +298,7 @@ namespace C
         {
             if (expr.Identifier == "writeln")
             {
+                // TODO into its own function
                 // TODO multiple params
                 var format = "%d";
                 if (expr.Arguments[0].Type == "string")
@@ -278,6 +314,14 @@ namespace C
 
                 return string.Format("printf(\"{0}\\n\", {1})", format, target);
             }
+            else if (expr.Identifier == "read")
+            {
+                foreach (var arg in expr.Arguments)
+                {
+                    generateRead(arg);
+                }
+                return "0";
+            }
             else
             {
                 var args = new List<string>();
@@ -291,6 +335,47 @@ namespace C
             }
         }
 
+        string generateRead(Expression argument)
+        {
+
+            var readVar = getTempVar("__read_var_");
+            var readSize = getTempVar("__read_size_");
+
+            var param1 = argument.Accept(this);
+
+            addStatement(
+                string.Format("char* {0} = malloc(50)", readVar),
+                string.Format("size_t {0} = 50", readSize),
+                string.Format("getline(&{0},&{1},stdin)", readVar, readSize)
+            );
+
+
+            // TODO check that params are variables
+
+            var exprType = argument.Type;
+
+            if (exprType == "string")
+            {
+                addStatement(
+                    string.Format("{0}[strlen({0})-1] = 0", readVar),
+                    string.Format("{0} = {1}", param1, readVar)
+                );
+            }
+            else if (exprType == "integer")
+            {
+                addStatement(
+                    //string.Format("printf(\"%s\", {0})", readVar)
+                    string.Format("{0} = atoi({1})", param1, readVar)
+                );
+            }
+            else
+            {
+                throw new Exception("Not supported read type " + exprType);
+            }
+
+            return readVar;
+        }
+
         string Expression.Visitor<string>.visitRelationExpression(Expression.Relation expr)
         {
             string tempVariable = "__temp_" + tempVariableIndex++;
@@ -300,6 +385,13 @@ namespace C
 
             addStatement("bool " + tempVariable + " = " + rTemp1 + Util.OpToC(expr.Operation) + rTemp2);
             return tempVariable;
+        }
+
+        string Expression.Visitor<string>.visitSizeExpression(Expression.Size expr)
+        {
+            addLine("// HERE BE SIZE EXPRESSION, TYPE " + expr.Type);
+            return "0";
+            //throw new NotImplementedException();
         }
     }
 }

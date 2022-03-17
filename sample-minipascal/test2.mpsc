@@ -1,12 +1,12 @@
 program Test;
 
 begin
-    var z : integer;
-    z := 6*7;
-
-    while z > 0 do begin
-        writeln(z);
-        z := z - 1;
+    var a : array [5] of integer;
+    var i := 0;
+    while i < 5 do begin
+        a[i] := i*i;
+        i := i + 1;
     end;
 
+    writeln(a[3]);
 end.

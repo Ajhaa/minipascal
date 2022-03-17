@@ -104,7 +104,7 @@ public class Parser
         var parameters = new List<Statement.Parameter>();
 
         match(LEFT_PAREN);
-        while(true)
+        while (true)
         {
             if (tokens[index].Type == RIGHT_PAREN) break;
             var isRef = matchIf(VAR) != null;
@@ -134,7 +134,7 @@ public class Parser
                 // {
                 //     return write();
                 // }
-                switch(lookahead().Type)
+                switch (lookahead().Type)
                 {
                     case LEFT_PAREN:
                         return new Statement.ExpressionStatement(functionCall());
@@ -142,7 +142,7 @@ public class Parser
                     case ASSIGN:
                         return assignment();
                     default:
-                    // TODO expected x got y here
+                        // TODO expected x got y here
                         throw new Exception("wtf");
                 }
             case IF:
@@ -204,12 +204,12 @@ public class Parser
         advance();
 
         var identifiers = new List<string>();
-        identifiers.Add((string) match(IDENTIFIER).Content);
+        identifiers.Add((string)match(IDENTIFIER).Content);
 
         while (tokens[index].Type == COMMA)
         {
             advance();
-            identifiers.Add((string) match(IDENTIFIER).Content);
+            identifiers.Add((string)match(IDENTIFIER).Content);
         }
 
         if (tokens[index].Type == ASSIGN)
@@ -227,13 +227,13 @@ public class Parser
             index++;
             match(LEFT_BRACKET);
             // TODO check acualy if integer (in analyzer?)
-            var size = (Expression.Literal) factor();
+            var size = (Expression.Literal)factor();
             match(RIGHT_BRACKET);
 
             match(OF);
             var arrayType = match(IDENTIFIER);
 
-            return new Statement.ArrayDeclarement(arrayType.Type, (int) size.Value, identifiers);
+            return new Statement.ArrayDeclarement(arrayType, (int)size.Value, identifiers);
         }
         match(IDENTIFIER);
         return new Statement.Declarement(type, identifiers, null);
@@ -241,7 +241,7 @@ public class Parser
 
     private Statement.Assignment assignment()
     {
-        var variable = (Expression.Variable) handleIdentifier(tokens[index]);
+        var variable = (Expression.Variable)handleIdentifier(tokens[index]);
         match(ASSIGN);
         var expr = expression();
 
@@ -319,17 +319,9 @@ public class Parser
 
     private Expression term()
     {
-        // var left = factor();
-        // if (reserved.IsMultiplication(tokens[index]))
-        // {
-        //     var mult = tokens[index];
-        //     index++;
-        //     return new Expression.Multiplication(mult.Type, left, term());
-        // }
-
-        // return left;
         var expr = factor();
-        while (reserved.IsMultiplication(tokens[index])) {
+        while (reserved.IsMultiplication(tokens[index]))
+        {
             var mult = tokens[index];
             index++;
             expr = new Expression.Multiplication(mult.Type, expr, factor());
@@ -342,27 +334,44 @@ public class Parser
     private Expression factor()
     {
         var current = tokens[index];
+        Expression expr = null;
+        if (lookahead().Type == DOT)
+        {
+
+        }
         if (reserved.IsLiteral(current))
         {
-            return new Expression.Literal(advance().Content, current.Type.ToString().ToLower());
+            expr = new Expression.Literal(advance().Content, current.Type.ToString().ToLower());
         }
         if (current.Type == IDENTIFIER)
         {
-            return handleIdentifier(current);
+            expr = handleIdentifier(current);
         }
         if (current.Type == LEFT_PAREN)
         {
             advance();
-            var expr = expression();
+            expr = expression();
             match(RIGHT_PAREN);
-            return expr;
         }
         if (current.Type == NOT)
         {
-            return new Expression.Unary(current, factor());
+            expr = new Expression.Unary(current, factor());
         }
 
-        throw new System.Exception("Invalid factor");
+        if (expr == null)
+        {
+            throw new System.Exception("Invalid factor");
+        }
+
+        if (tokens[index].Type == DOT)
+        {
+            advance();
+            // TODO check that this is acually size
+            match(IDENTIFIER);
+            expr = new Expression.Size(expr);
+        }
+
+        return expr;
     }
 
     private Expression handleIdentifier(Token current)

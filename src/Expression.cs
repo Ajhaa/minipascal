@@ -12,7 +12,7 @@ public abstract class Expression
         T visitVariableExpression(Expression.Variable expr);
         T visitCallExpression(Expression.FunctionCall expr);
         T visitRelationExpression(Expression.Relation expr);
-
+        T visitSizeExpression(Expression.Size expr);
     }
     public class Relation : Expression
     {
@@ -172,7 +172,7 @@ public abstract class Expression
 
     public class Size : Expression
     {
-        Expression Expr;
+        public Expression Expr { get; }
 
         public Size(Expression expr)
         {
@@ -181,7 +181,7 @@ public abstract class Expression
 
         public override T Accept<T>(Visitor<T> visitor)
         {
-            throw new System.NotImplementedException();
+            return visitor.visitSizeExpression(this);
         }
     }
 }
