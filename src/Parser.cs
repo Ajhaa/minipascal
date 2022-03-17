@@ -142,6 +142,7 @@ public class Parser
                     case ASSIGN:
                         return assignment();
                     default:
+                    // TODO expected x got y here
                         throw new Exception("wtf");
                 }
             case IF:
@@ -155,6 +156,10 @@ public class Parser
                 return assertStatement();
             case RETURN:
                 index++;
+                if (tokens[index].Type == SEMICOLON)
+                {
+                    return new Statement.Return(null);
+                }
                 return new Statement.Return(expression());
             case BEGIN:
                 return block();

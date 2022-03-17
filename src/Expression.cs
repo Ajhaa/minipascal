@@ -3,6 +3,7 @@ using System.Collections.Generic;
 public abstract class Expression
 {
     public abstract T Accept<T>(Visitor<T> visitor);
+    public string Type { get; set; }
     public interface Visitor<T>
     {
         T visitAdditionExpression(Expression.Addition expr);
@@ -11,7 +12,7 @@ public abstract class Expression
         T visitVariableExpression(Expression.Variable expr);
         T visitCallExpression(Expression.FunctionCall expr);
         T visitRelationExpression(Expression.Relation expr);
-        
+
     }
     public class Relation : Expression
     {
@@ -35,7 +36,7 @@ public abstract class Expression
             return visitor.visitRelationExpression(this);
         }
     }
-    
+
     public class Addition : Expression
     {
 
@@ -87,9 +88,9 @@ public abstract class Expression
     }
 
     public class Literal : Expression
-    {   
+    {
         public object Value { get; }
-        public string Type { get; }
+        //public string Type { get; }
 
         public Literal(object val, string type)
         {
@@ -105,11 +106,11 @@ public abstract class Expression
         public override T Accept<T>(Visitor<T> visitor)
         {
             return visitor.visitLiteralExpression(this);
-        } 
+        }
     }
 
     public class Variable : Expression
-    {   
+    {
         public string Identifier { get; }
         public Expression Indexer { get; }
 
@@ -127,7 +128,7 @@ public abstract class Expression
         public override T Accept<T>(Visitor<T> visitor)
         {
             return visitor.visitVariableExpression(this);
-        } 
+        }
     }
 
     public class FunctionCall : Expression

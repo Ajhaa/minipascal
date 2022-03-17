@@ -14,14 +14,12 @@ namespace C
         private Environment functions = new Environment();
         // private int memoryPointer = 0;
         private Dictionary<string, List<bool>> passByVar = new Dictionary<string, List<bool>>();
-
-        private Stack<string> expressionStack = new Stack<string>();
         private int tempVariableIndex = 0;
 
         public Generator(List<Statement.Function> program)
         {
             this.program = program;
-            functions.Declare("write");
+            functions.Declare("writeln");
         }
 
         public CProgram Generate()
@@ -39,17 +37,6 @@ namespace C
             current.Body.AddRange(instructions);
         }
 
-        private void addExpression(string expression)
-        {
-            expressionStack.Push(expression);
-        }
-
-        private void resolveExpressionStack()
-        {
-            while (expressionStack.Count > 0) {
-                current.Body.Add(expressionStack.Pop());
-            }
-        }
         private void addInstruction(IEnumerable<string> instructions)
         {
             current.Body.AddRange(instructions);
@@ -58,7 +45,7 @@ namespace C
         public object VisitFunctionStatement(Statement.Function stmt)
         {
             var name = stmt.Identifier;
-            var returnType = stmt.ReturnValue;
+            var returnType = Util.TypeToCType(stmt.ReturnValue);
             current = new CFunction(returnType, name);
             functions.Declare(name);
 
@@ -85,6 +72,7 @@ namespace C
 
         object Statement.Visitor<object>.VisitBlockStatement(Statement.Block stmt)
         {
+            // TODO brackets to c ?
             //environment.EnterInner();
 
             foreach (var s in stmt.Statements)
@@ -108,6 +96,8 @@ namespace C
                 current.Locals++;
                 var index = environment.Declare(ident);
                 // if declarement has assignment, evaluate it
+                var type = Util.TypeToCType(stmt.Type);
+
                 if (stmt.Assigner != null)
                 {
                     // string tempVariable = "__temp_" + tempVariableIndex++;
@@ -115,11 +105,10 @@ namespace C
                     // addInstruction("int " + tempVariable + ";");
                     //tempVariableStack.Push(tempVariable);
                     var result_temp = stmt.Assigner.Accept(this);
-                    resolveExpressionStack();
 
-                    addInstruction("int " + ident + " = " + result_temp);
+                    addInstruction(type +" "+ ident + " = " + result_temp);
                 } else {
-                    addInstruction("int " + ident);
+                    addInstruction(type + " " + ident);
                 }
 
                 // addInstruction(I32_CONST);
@@ -145,12 +134,21 @@ namespace C
 
         object Statement.Visitor<object>.VisitReturnStatement(Statement.Return stmt)
         {
-            throw new NotImplementedException();
+            if (stmt.Expr == null)
+            {
+                addInstruction("return");
+                return null;
+            }
+            var res = stmt.Expr.Accept(this);
+            addInstruction("return " + res);
+            return null;
         }
 
         object Statement.Visitor<object>.VisitExpressionStatement(Statement.ExpressionStatement stmt)
         {
-            throw new NotImplementedException();
+            var result = stmt.Expr.Accept(this);
+            addInstruction(result);
+            return null;
         }
 
         object Statement.Visitor<object>.VisitWriteStatement(Statement.Write stmt)
@@ -200,17 +198,45 @@ namespace C
         {
             //string tempVariable = "__temp_" + tempVariableIndex++;
             //addInstruction("int " + tempVariable + "=" + expr.Value);
+            if (expr.Type == "string")
+            {
+                return string.Format("\"{0}\"", expr.Value.ToString());
+            }
             return expr.Value.ToString();
         }
 
         string Expression.Visitor<string>.visitVariableExpression(Expression.Variable expr)
         {
             // TODO arrayThing??
+            // TODO handle the pass as ref case var*
             return expr.Identifier;
         }
 
         string Expression.Visitor<string>.visitCallExpression(Expression.FunctionCall expr)
         {
+            if (expr.Identifier == "writeln")
+            {
+                // TODO multiple params
+                var format = "%d";
+                if (expr.Arguments[0].Type == "string") {
+                    format = "%s";
+                } else if (expr.Arguments[0].Type == "Boolean") {
+                    format = "%s";
+                }
+
+                var target = expr.Arguments[0].Accept(this);
+
+                return string.Format("printf(\"{0}\\n\", {1})", format, target);
+            } else {
+                var args = new List<string>();
+                // TODO pass by ref
+                foreach (var arg in expr.Arguments)
+                {
+                    args.Add(arg.Accept(this));
+                }
+
+                return string.Format("{0}({1})", expr.Identifier, string.Join(",", args));
+            }
             throw new NotImplementedException();
         }
 

@@ -12,7 +12,7 @@ public abstract class Statement
         T VisitDeclarementStatement(Statement.Declarement stmt);
         T VisitArrayDeclarementStatement(Statement.ArrayDeclarement stmt);
         T VisitAssignmentStatement(Statement.Assignment stmt);
-        T VisitReturnStatement(Statement.Return stmt);   
+        T VisitReturnStatement(Statement.Return stmt);
         T VisitExpressionStatement(Statement.ExpressionStatement stmt);
         T VisitWriteStatement(Statement.Write stmt);
         T VisitIfStatement(Statement.If stmt);
@@ -31,7 +31,11 @@ public abstract class Statement
         {
             Identifier = id;
             Parameters = parameters;
-            ReturnValue = retVal;
+            ReturnValue = "void";
+            if (retVal != null)
+            {
+                ReturnValue = retVal;
+            }
             Body = body;
         }
 
@@ -160,7 +164,7 @@ public abstract class Statement
         {
             Condition = condition;
             Body = body;
-        } 
+        }
 
         public override T Accept<T>(Visitor<T> visitor)
         {

@@ -85,4 +85,26 @@ public class Util
                 throw new Exception("not a operation" + operation);
         }
     }
+
+    public static string TypeToCType(Token typeToken)
+    {
+        return TypeToCType(typeToken.Content.ToString());
+    }
+
+    public static string TypeToCType(string typeName)
+    {
+        switch (typeName)
+        {
+            case "string":
+                return "char*";
+            case "Boolean":
+                return "bool";
+            case "integer":
+                return "int";
+            case "void":
+                return "void";
+            default:
+                throw new Exception("not a type " + typeName);
+        }
+    }
 }

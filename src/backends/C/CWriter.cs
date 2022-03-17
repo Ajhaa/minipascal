@@ -29,10 +29,17 @@ namespace C
             // generateTypes();
             // wasm.AddRange(WASMbase.Import);
             // generateFunctionMeta();
-            // generateExports();
+            generateIncludes();
             generateFunctionCode();
             // generateData();
             return cFile;
+        }
+
+        private void generateIncludes()
+        {
+            cFile += "#include <stdio.h>\n";
+            cFile += "#include <string.h>\n";
+
         }
 
         // TODO fix length stuff
@@ -41,7 +48,6 @@ namespace C
             // wasm.Add(0x0a);
             // wasm.Add(0); // placeholder for section size
             // var index = wasm.Count - 1;
-
             foreach (var func in program.functions)
             {
                 var returnType = func.ReturnType;
@@ -50,14 +56,26 @@ namespace C
                     returnType = "int";
                     name = "main";
                 }
+
                 cFile += string.Format("{0} {1}(", returnType, name);
                 if (func.Parameters.Count == 0) {
                     cFile += ") {\n";
+                } else {
+                    foreach (var param in func.Parameters)
+                    {
+                        // TODO pass by ref
+                        // TODO move type transformations to generator
+                        var type = Util.TypeToCType(param.Item2);
+                        cFile += string.Format("{0} {1},", type, param.Item1);
+                    }
+                    cFile = cFile.Remove(cFile.Length - 1) + ") {\n";
                 }
+
                 foreach (var stmt in func.Body)
                 {
                     cFile += stmt + ';' +'\n';
                 }
+
                 cFile += "}\n";
             }
 

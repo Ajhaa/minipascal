@@ -8,7 +8,7 @@ class Analyzer : Statement.Visitor<object>, Expression.Visitor<object>
 
   public Analyzer(List<Statement.Function> stmts)
   {
-    variables.Add("write", null);
+    variables.Add("writeln", null);
     foreach (var stmt in stmts)
     {
       variables.Add(stmt.Identifier, stmt.ReturnValue);
@@ -107,6 +107,10 @@ class Analyzer : Statement.Visitor<object>, Expression.Visitor<object>
   public object VisitReturnStatement(Statement.Return stmt)
   {
     returningBranch = true;
+    if (stmt.Expr == null)
+    {
+      return "void";
+    }
     return stmt.Expr.Accept(this);
   }
 
@@ -132,6 +136,8 @@ class Analyzer : Statement.Visitor<object>, Expression.Visitor<object>
       throw new Exception(string.Format("Cannot add {0} to {1}", left, right));
     }
 
+    expr.Type = left.ToString();
+
     return left;
   }
 
@@ -146,6 +152,8 @@ class Analyzer : Statement.Visitor<object>, Expression.Visitor<object>
       throw new Exception("Cannot multiply different types");
     }
 
+    expr.Type = left.ToString();
+
     return left;
   }
   public object visitLiteralExpression(Expression.Literal expr)
@@ -154,11 +162,21 @@ class Analyzer : Statement.Visitor<object>, Expression.Visitor<object>
   }
   public object visitVariableExpression(Expression.Variable expr)
   {
+    expr.Type = variables[expr.Identifier.ToString()];
+
     return variables[expr.Identifier.ToString()];
   }
 
   public object visitCallExpression(Expression.FunctionCall expr)
   {
+    expr.Type = variables[expr.Identifier.ToString()];
+
+    foreach (var arg in expr.Arguments)
+    {
+      // TODO validate that the arg really is correct type
+      arg.Accept(this);
+    }
+
     return variables[expr.Identifier];
   }
 }
