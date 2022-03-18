@@ -1,12 +1,21 @@
 program Test;
 
 begin
-    var a : array [5] of integer;
+    var a : array [5] of string;
     var i := 0;
-    while i < 5 do begin
-        a[i] := i*i;
+    while i < a.size do begin
+        var j := 0;
+        a[i] := "";
+        while j < i + 1 do begin
+            a[i] := a[i] + "A";
+            j := j + 1;
+        end;
         i := i + 1;
     end;
 
-    writeln(a[3]);
+    i := 0;
+    while i < a.size do begin
+        writeln(a[i]);
+        i := i + 1;
+    end;
 end.

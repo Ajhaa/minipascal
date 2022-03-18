@@ -201,10 +201,12 @@ class Analyzer : Statement.Visitor<object>, Expression.Visitor<object>
     return variables[expr.Identifier];
   }
 
+
+  // TODO only accept Array.size
     object Expression.Visitor<object>.visitSizeExpression(Expression.Size expr)
     {
-        var type = expr.Expr.Accept(this);
-        expr.Type = type.ToString();
-        return type;
+        expr.Expr.Accept(this);
+        expr.Type = "integer";
+        return "integer";
     }
 }

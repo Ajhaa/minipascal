@@ -131,13 +131,19 @@ namespace C
         {
             foreach (var ident in stmt.Identifiers)
             {
-                current.Locals++;
                 environment.Declare(ident);
 
                 var size = stmt.Size;
                 var type = Util.TypeToCType(stmt.Type);
-                // TODO make a struct to save length
-                addStatement(string.Format("{0}* {1} = malloc(sizeof({0}) * {2})", type, ident, size));
+                var stmtType = stmt.Type.Content.ToString();
+                var temp = getTempVar();
+                addStatement(
+                    $"{stmtType}Array* {ident} = malloc(sizeof({stmtType}Array))",
+                    $"{type}* {temp} = malloc(sizeof({type}) * {size})",
+                    $"{ident}->size = {size}",
+                    $"{ident}->content = {temp}"
+                );
+
             }
             return null;
         }
@@ -145,18 +151,6 @@ namespace C
         object Statement.Visitor<object>.VisitAssignmentStatement(Statement.Assignment stmt)
         {
             var result_temp = stmt.Expr.Accept(this);
-            // // TODO indexing
-            // if (stmt.Variable.Indexer != null)
-            // {
-            //     var indexer = stmt.Variable.Indexer.Accept(this);
-            //     addStatement(return string.Format("{0}[{1}]", expr.Identifier, indexer));
-
-            // }
-            // else
-            // {
-            //     addStatement(stmt.Variable.Identifier + " = " + result_temp);
-            // }
-
             var target = stmt.Variable.Accept(this);
             addStatement(target + " = " + result_temp);
             return null;
@@ -177,6 +171,10 @@ namespace C
         object Statement.Visitor<object>.VisitExpressionStatement(Statement.ExpressionStatement stmt)
         {
             var result = stmt.Expr.Accept(this);
+            if (result == null)
+            {
+                return null;
+            }
             addStatement(result);
             return null;
         }
@@ -286,11 +284,11 @@ namespace C
 
         string Expression.Visitor<string>.visitVariableExpression(Expression.Variable expr)
         {
-            // TODO arrayThing??
+            // TODO index out of bounds check
             if (expr.Indexer != null)
             {
                 var indexer = expr.Indexer.Accept(this);
-                return string.Format("{0}[{1}]", expr.Identifier, indexer);
+                return string.Format("{0}->content[{1}]", expr.Identifier, indexer);
             }
             // TODO handle the pass as ref case var*
             return expr.Identifier;
@@ -300,21 +298,14 @@ namespace C
         {
             if (expr.Identifier == "writeln")
             {
-                // TODO into its own function
-                // TODO multiple params
-                var format = "%d";
-                if (expr.Arguments[0].Type == "string")
+                foreach (var arg in expr.Arguments)
                 {
-                    format = "%s";
+                    generateWriteLn(arg);
                 }
-                else if (expr.Arguments[0].Type == "Boolean")
-                {
-                    format = "%s";
-                }
-
-                var target = expr.Arguments[0].Accept(this);
-
-                return string.Format("printf(\"{0}\\n\", {1})", format, target);
+                addStatement(
+                    "printf(\"\\n\")"
+                );
+                return null;
             }
             else if (expr.Identifier == "read")
             {
@@ -322,10 +313,11 @@ namespace C
                 {
                     generateRead(arg);
                 }
-                return "0";
+                return null;
             }
             else
             {
+                var temp = getTempVar();
                 var args = new List<string>();
                 // TODO pass by ref
                 foreach (var arg in expr.Arguments)
@@ -333,8 +325,41 @@ namespace C
                     args.Add(arg.Accept(this));
                 }
 
-                return string.Format("{0}({1})", expr.Identifier, string.Join(",", args));
+                var type = Util.TypeToCType(expr.Type);
+                var argString = string.Join(",", args);
+                if (type == "void")
+                {
+                    addStatement($"{expr.Identifier}({argString})");
+                    return null;
+                }
+                addStatement($"{type} {temp} = {expr.Identifier}({argString})");
+                return temp;
             }
+        }
+
+        string generateWriteLn(Expression argument)
+        {
+            var type = argument.Type;
+            var format = "%d";
+            switch (type)
+            {
+                case "string":
+                    format = "%s";
+                    break;
+
+                case "Boolean":
+                    format = "%b";
+                    break;
+
+                case "real":
+                    format = "%f";
+                    break;
+            }
+
+            var target = argument.Accept(this);
+
+            addStatement($"printf(\"{format}\", {target})");
+            return null;
         }
 
         string generateRead(Expression argument)
@@ -366,8 +391,13 @@ namespace C
             else if (exprType == "integer")
             {
                 addStatement(
-                    //string.Format("printf(\"%s\", {0})", readVar)
                     string.Format("{0} = atoi({1})", param1, readVar)
+                );
+            }
+            else if (exprType == "real")
+            {
+                addStatement(
+                    $"{param1} = strtod({readVar}, 0)"
                 );
             }
             else
@@ -391,9 +421,8 @@ namespace C
 
         string Expression.Visitor<string>.visitSizeExpression(Expression.Size expr)
         {
-            addLine("// HERE BE SIZE EXPRESSION, TYPE " + expr.Type);
-            return "0";
-            //throw new NotImplementedException();
+            var res = expr.Expr.Accept(this);
+            return $"{res}->size";
         }
     }
 }

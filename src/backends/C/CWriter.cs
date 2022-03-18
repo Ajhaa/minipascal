@@ -10,7 +10,7 @@ namespace C
     class CWriter
     {
         private CProgram program;
-        private string cFile = "";
+        private string cFile = CBase.Base.TrimStart();
         // private Dictionary<Tuple<int, int>, int> types = new Dictionary<Tuple<int, int>, int>();
 
         public CWriter(CProgram program)
@@ -29,27 +29,41 @@ namespace C
             // generateTypes();
             // wasm.AddRange(WASMbase.Import);
             // generateFunctionMeta();
-            generateIncludes();
             generateFunctionCode();
             // generateData();
             return cFile;
         }
 
-        private void generateIncludes()
-        {
-            cFile += "#include <assert.h>\n";
-            cFile += "#include <stdio.h>\n";
-            cFile += "#include <stdlib.h>\n";
-            cFile += "#include <string.h>\n";
-            cFile += "#include <stdbool.h>\n";
-        }
-
         // TODO fix length stuff
         private void generateFunctionCode()
         {
-            // wasm.Add(0x0a);
-            // wasm.Add(0); // placeholder for section size
-            // var index = wasm.Count - 1;
+            // Forward declarations
+            // TODO a lot of repeating code
+            foreach (var func in program.functions)
+            {
+                var returnType = func.ReturnType;
+                var name = func.Name;
+                if (func.Name == "__main__") {
+                    continue;
+                }
+
+                cFile += string.Format("{0} {1}(", returnType, name);
+                if (func.Parameters.Count == 0) {
+                    cFile += ")";
+                } else {
+                    foreach (var param in func.Parameters)
+                    {
+                        // TODO pass by ref
+                        // TODO move type transformations to generator
+                        var type = Util.TypeToCType(param.Item2);
+                        cFile += string.Format("{0} {1},", type, param.Item1);
+                    }
+                    cFile = cFile.Remove(cFile.Length - 1) + ")";
+                };
+
+                cFile += ";\n";
+            }
+            cFile += '\n';
             foreach (var func in program.functions)
             {
                 var returnType = func.ReturnType;

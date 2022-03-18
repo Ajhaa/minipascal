@@ -1,7 +1,11 @@
 
+Fix analyzer to allow same named variables.
 Booleans.
 Unary expressions.
 Real type.
+Nested function calls are probably not allowed.
+Also, no mixing function calls and arithmetic.
+Difference between keywords and predef id:s.
 Better information to assert.
 Negative numbers :D.
 Use blocks with functions correctly

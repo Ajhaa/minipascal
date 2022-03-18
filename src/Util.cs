@@ -101,6 +101,8 @@ public class Util
                 return "bool";
             case "integer":
                 return "int";
+            case "real":
+                return "double";
             case "void":
                 return "void";
             default:
