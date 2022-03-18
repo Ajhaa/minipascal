@@ -1,5 +1,5 @@
-
-Fix analyzer to allow same named variables.
+Var parameters.
+Check that if and while blocks are handled correctly in analyzer.
 Booleans.
 Unary expressions.
 Real type.
@@ -8,8 +8,12 @@ Also, no mixing function calls and arithmetic.
 Difference between keywords and predef id:s.
 Better information to assert.
 Negative numbers :D.
+Return analysis does nothing right now.
 Use blocks with functions correctly
 String efficiency with read?
 Cleanup generator. Local counts are probably not useful.
 Type is tokenType somewhere, string in other places
 Returns in ifs generate unreachable labels.
+
+
+Feels like cheating to use the original variable names?

@@ -3,17 +3,17 @@ using System.Collections.Generic;
 
 class Analyzer : Statement.Visitor<object>, Expression.Visitor<object>
 {
-  Dictionary<string, string> variables = new Dictionary<string, string>();
+  AnalyzerEnvironment variables = new AnalyzerEnvironment();
   private Boolean returningBranch = false;
 
   public Analyzer(List<Statement.Function> stmts)
   {
-    variables.Add("writeln", null);
-    variables.Add("read", null);
+    variables.Declare("writeln", null);
+    variables.Declare("read", null);
 
     foreach (var stmt in stmts)
     {
-      variables.Add(stmt.Identifier, stmt.ReturnValue);
+      variables.Declare(stmt.Identifier, stmt.ReturnValue);
     }
     foreach (var stmt in stmts)
     {
@@ -23,24 +23,29 @@ class Analyzer : Statement.Visitor<object>, Expression.Visitor<object>
   public object VisitFunctionStatement(Statement.Function stmt)
   {
     // todo params?
+    variables.EnterInner();
     foreach (var param in stmt.Parameters)
     {
       param.Accept(this);
     }
-    return stmt.Body.Accept(this);
+    stmt.Body.Accept(this);
+    variables.ExitInner();
+    return null;
   }
   public object VisitBlockStatement(Statement.Block stmt)
   {
+    variables.EnterInner();
     foreach (var item in stmt.Statements)
     {
       item.Accept(this);
     }
+    variables.ExitInner();
     return null;
   }
 
   public object VisitParameterStatement(Statement.Parameter stmt)
   {
-    variables.Add(stmt.Identifier, stmt.Type);
+    variables.Declare(stmt.Identifier, stmt.Type);
     return null;
   }
   public object VisitDeclarementStatement(Statement.Declarement stmt)
@@ -56,7 +61,7 @@ class Analyzer : Statement.Visitor<object>, Expression.Visitor<object>
     }
     foreach (var ident in stmt.Identifiers)
     {
-      variables.Add(ident, type);
+      variables.Declare(ident, type);
     }
     return null;
   }
@@ -67,7 +72,7 @@ class Analyzer : Statement.Visitor<object>, Expression.Visitor<object>
     var type = stmt.Type.Content.ToString();
     foreach (var ident in stmt.Identifiers)
     {
-      variables.Add(ident, type);
+      variables.Declare(ident, type);
     }
     return null;
   }
@@ -183,14 +188,14 @@ class Analyzer : Statement.Visitor<object>, Expression.Visitor<object>
   }
   public object visitVariableExpression(Expression.Variable expr)
   {
-    expr.Type = variables[expr.Identifier.ToString()];
+    expr.Type = variables.GetType(expr.Identifier.ToString());
 
-    return variables[expr.Identifier.ToString()];
+    return expr.Type;
   }
 
   public object visitCallExpression(Expression.FunctionCall expr)
   {
-    expr.Type = variables[expr.Identifier.ToString()];
+    expr.Type = variables.GetType(expr.Identifier.ToString());
 
     foreach (var arg in expr.Arguments)
     {
@@ -198,7 +203,7 @@ class Analyzer : Statement.Visitor<object>, Expression.Visitor<object>
       arg.Accept(this);
     }
 
-    return variables[expr.Identifier];
+    return expr.Type;
   }
 
 
