@@ -224,7 +224,9 @@ namespace C
 
         object Statement.Visitor<object>.VisitAssertStatement(Statement.Assert stmt)
         {
-            throw new NotImplementedException();
+            var res = stmt.Expr.Accept(this);
+            addStatement(string.Format("assert({0} != 0)", res));
+            return null;
         }
 
         string Expression.Visitor<string>.visitAdditionExpression(Expression.Addition expr)

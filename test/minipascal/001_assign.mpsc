@@ -1,0 +1,10 @@
+program Test_001;
+
+begin
+    var number : integer;
+    number := 2022;
+    assert (number = 2022);
+
+    number := 1917;
+    assert (number = 1917);
+end.

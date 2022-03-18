@@ -126,13 +126,24 @@ class Analyzer : Statement.Visitor<object>, Expression.Visitor<object>
 
   public object VisitAssertStatement(Statement.Assert stmt)
   {
+    stmt.Expr.Accept(this);
     return null;
   }
   public object VisitWriteStatement(Statement.Write stmt) { return null; }
 
   public object visitRelationExpression(Expression.Relation expr)
   {
-    return null;
+    var left = expr.Left.Accept(this);
+    var right = expr.Right.Accept(this);
+
+    if (left.ToString() != right.ToString())
+    {
+      throw new Exception(string.Format("Cannot compare {0} to {1}", left, right));
+    }
+
+    expr.Type = left.ToString();
+
+    return left;
   }
 
   // TODO plus vs minus vs OR

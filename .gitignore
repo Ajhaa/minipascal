@@ -5,3 +5,5 @@ bin/
 !wasm/*.wasm
 sample-minipascal/test.mpsc
 simple.mpsc
+pascal.c
+a.out

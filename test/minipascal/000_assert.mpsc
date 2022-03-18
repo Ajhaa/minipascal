@@ -1,0 +1,5 @@
+program Test_000;
+
+begin
+    assert (true);
+end.

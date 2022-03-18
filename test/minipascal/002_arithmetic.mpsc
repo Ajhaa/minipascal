@@ -1,0 +1,28 @@
+program Test_002;
+
+begin
+    var x, y, z : integer;
+    x := 5;
+    y := 4;
+    z := x + y;
+
+    assert (z = 9);
+
+
+    x := x - 15;
+    x := x + y;
+    assert (x = 0 - 6);
+
+
+    x := 10;
+    y := 15;
+    z := x * y;
+
+    assert (z = 150);
+
+
+    z := z / 3;
+    z := z / x;
+
+    assert (z = 5);
+end.

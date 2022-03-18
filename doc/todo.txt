@@ -1,6 +1,9 @@
 
+Booleans.
 Unary expressions.
 Real type.
+Better information to assert.
+Negative numbers :D.
 Use blocks with functions correctly
 String efficiency with read?
 Cleanup generator. Local counts are probably not useful.

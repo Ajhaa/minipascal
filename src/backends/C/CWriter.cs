@@ -37,6 +37,7 @@ namespace C
 
         private void generateIncludes()
         {
+            cFile += "#include <assert.h>\n";
             cFile += "#include <stdio.h>\n";
             cFile += "#include <stdlib.h>\n";
             cFile += "#include <string.h>\n";
