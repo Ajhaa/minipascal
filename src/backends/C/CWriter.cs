@@ -43,20 +43,23 @@ namespace C
             {
                 var returnType = func.ReturnType;
                 var name = func.Name;
-                if (func.Name == "__main__") {
+                if (func.Name == "__main__")
+                {
                     continue;
                 }
 
                 cFile += string.Format("{0} {1}(", returnType, name);
-                if (func.Parameters.Count == 0) {
+                if (func.Parameters.Count == 0)
+                {
                     cFile += ")";
-                } else {
+                }
+                else
+                {
                     foreach (var param in func.Parameters)
                     {
                         // TODO pass by ref
                         // TODO move type transformations to generator
-                        var type = Util.TypeToCType(param.Item2);
-                        cFile += string.Format("{0} {1},", type, param.Item1);
+                        cFile += string.Format("{0} {1},", param.Item2, param.Item1);
                     }
                     cFile = cFile.Remove(cFile.Length - 1) + ")";
                 };
@@ -68,28 +71,32 @@ namespace C
             {
                 var returnType = func.ReturnType;
                 var name = func.Name;
-                if (func.Name == "__main__") {
+                if (func.Name == "__main__")
+                {
                     returnType = "int";
                     name = "main";
                 }
 
                 cFile += string.Format("{0} {1}(", returnType, name);
-                if (func.Parameters.Count == 0) {
+                if (func.Parameters.Count == 0)
+                {
                     cFile += ") {\n";
-                } else {
+                }
+                else
+                {
                     foreach (var param in func.Parameters)
                     {
                         // TODO pass by ref
                         // TODO move type transformations to generator
-                        var type = Util.TypeToCType(param.Item2);
-                        cFile += string.Format("{0} {1},", type, param.Item1);
+                        cFile += string.Format("{0} {1},", param.Item2, param.Item1);
+
                     }
                     cFile = cFile.Remove(cFile.Length - 1) + ") {\n";
                 }
 
                 foreach (var stmt in func.Body)
                 {
-                    cFile += stmt +'\n';
+                    cFile += stmt + '\n';
                 }
 
                 cFile += "}\n";

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using static TokenType;
 
 
@@ -61,7 +62,7 @@ public class Parser
     public List<Statement.Function> Parse()
     {
         match(PROGRAM);
-        // TODO use the program name
+        // TODO use the program name (WHERE?)
         match(IDENTIFIER);
         match(SEMICOLON);
         while (index < tokens.Count)
@@ -111,6 +112,21 @@ public class Parser
             var ident = match(IDENTIFIER).Content.ToString();
             match(COLON);
             var type = match(IDENTIFIER);
+            // TODO figure out array params
+            // if (type.Type == ARRAY)
+            // {
+            //     index++;
+            //     match(LEFT_BRACKET);
+            //     // TODO check acualy if integer (in analyzer?)
+            //     var size = (Expression.Literal)factor();
+            //     match(RIGHT_BRACKET);
+
+            //     match(OF);
+            //     var arrayType = match(IDENTIFIER);
+
+            //     parameters.Add(new Statement.Parameter(isRef, arrayType, ident))
+            // }
+            //match(IDENTIFIER);
             parameters.Add(new Statement.Parameter(isRef, type.Content.ToString(), ident));
             if (matchIf(COMMA) == null)
             {
@@ -191,10 +207,12 @@ public class Parser
 
     public Statement.Assert assertStatement()
     {
+        var leftParenIndex = index;
         match(LEFT_PAREN);
         var expr = expression();
         match(RIGHT_PAREN);
-        return new Statement.Assert(expr);
+        var tokensBetween = tokens.Skip(leftParenIndex + 1).Take(index - leftParenIndex - 2);
+        return new Statement.Assert(expr, tokensBetween.ToList());
     }
 
     // TODO identifers as strings vs objects
@@ -227,13 +245,14 @@ public class Parser
             index++;
             match(LEFT_BRACKET);
             // TODO check acualy if integer (in analyzer?)
-            var size = (Expression.Literal)factor();
+            // TODO size is not mandatory? or isit in declarement case
+            var size =  expression();
             match(RIGHT_BRACKET);
 
             match(OF);
             var arrayType = match(IDENTIFIER);
 
-            return new Statement.ArrayDeclarement(arrayType, (int)size.Value, identifiers);
+            return new Statement.ArrayDeclarement(arrayType, size, identifiers);
         }
         match(IDENTIFIER);
         return new Statement.Declarement(type, identifiers, null);
@@ -248,13 +267,13 @@ public class Parser
         return new Statement.Assignment(variable, expr);
     }
 
-    private Statement write()
-    {
-        match(IDENTIFIER);
-        var stmt = new Statement.Write(arguments());
-        match(SEMICOLON);
-        return stmt;
-    }
+    // private Statement write()
+    // {
+    //     match(IDENTIFIER);
+    //     var stmt = new Statement.Write(arguments());
+    //     match(SEMICOLON);
+    //     return stmt;
+    // }
 
     // TODO index oob with match(DOT)
     private Statement.Function mainBlock()
@@ -330,15 +349,13 @@ public class Parser
         return expr;
     }
 
-    // TODO implement <factor>.size
     private Expression factor()
     {
         var current = tokens[index];
         Expression expr = null;
-        if (lookahead().Type == DOT)
-        {
 
-        }
+        Console.WriteLine(current);
+
         if (reserved.IsLiteral(current))
         {
             expr = new Expression.Literal(advance().Content, current.Type.ToString().ToLower());
@@ -353,7 +370,7 @@ public class Parser
             expr = expression();
             match(RIGHT_PAREN);
         }
-        if (current.Type == NOT)
+        if (current.Type == NOT) // TODO minus
         {
             expr = new Expression.Unary(current, factor());
         }

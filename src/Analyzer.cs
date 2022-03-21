@@ -74,6 +74,15 @@ class Analyzer : Statement.Visitor<object>, Expression.Visitor<object>
     {
       variables.Declare(ident, type);
     }
+
+    var sizeType = stmt.Size.Accept(this);
+
+    if (sizeType.ToString() != "integer")
+    {
+      // TODO line number
+      throw new Exception($"Array size must be an integer");
+    }
+
     return null;
   }
 
@@ -134,7 +143,7 @@ class Analyzer : Statement.Visitor<object>, Expression.Visitor<object>
     stmt.Expr.Accept(this);
     return null;
   }
-  public object VisitWriteStatement(Statement.Write stmt) { return null; }
+  // public object VisitWriteStatement(Statement.Write stmt) { return null; }
 
   public object visitRelationExpression(Expression.Relation expr)
   {
@@ -154,6 +163,7 @@ class Analyzer : Statement.Visitor<object>, Expression.Visitor<object>
   // TODO plus vs minus vs OR
   public object visitAdditionExpression(Expression.Addition expr)
   {
+    Console.WriteLine("ENtering addition expression");
     var left = expr.Left.Accept(this);
     var right = expr.Right.Accept(this);
 
@@ -188,6 +198,14 @@ class Analyzer : Statement.Visitor<object>, Expression.Visitor<object>
   }
   public object visitVariableExpression(Expression.Variable expr)
   {
+    if (expr.Indexer != null)
+    {
+      var indexerType = expr.Indexer.Accept(this);
+      if (indexerType.ToString() != "integer")
+      {
+        throw new Exception("Indexer must be an integer");
+      }
+    }
     expr.Type = variables.GetType(expr.Identifier.ToString());
 
     return expr.Type;

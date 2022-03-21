@@ -1,0 +1,21 @@
+program PassByVar;
+
+procedure Modify(var i : integer, var s : string);
+begin
+    i := i * 2;
+    s := s + " world";
+end;
+
+begin
+    var str : string;
+    var intgr : integer;
+
+    str := "hello";
+    intgr := 5;
+
+    Modify(intgr, str);
+
+    assert(intgr = 10);
+    assert(str = "hello world");
+
+end.

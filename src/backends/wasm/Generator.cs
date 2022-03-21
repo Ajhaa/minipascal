@@ -127,12 +127,13 @@ namespace WASM
 
                 current.Locals++;
                 var index = environment.Declare(ident);
+
                 // TODO is this needed
                 // store a placeholder 0 to the memory
                 addInstruction(0x41);
                 addInstruction(pointer);
 
-                memoryPointer += 4 * stmt.Size;
+                memoryPointer += 4 * 100; // TODO howto size now that size is an expression
                 addInstruction(I32_CONST);
                 addInstruction(Util.LEB128encode(0));
 
@@ -229,7 +230,7 @@ namespace WASM
             return null;
         }
 
-        public object VisitWriteStatement(Statement.Write stmt) { return null; }
+        // public object VisitWriteStatement(Statement.Write stmt) { return null; }
 
         public object visitRelationExpression(Expression.Relation expr)
         {

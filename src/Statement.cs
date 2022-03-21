@@ -14,7 +14,7 @@ public abstract class Statement
         T VisitAssignmentStatement(Statement.Assignment stmt);
         T VisitReturnStatement(Statement.Return stmt);
         T VisitExpressionStatement(Statement.ExpressionStatement stmt);
-        T VisitWriteStatement(Statement.Write stmt);
+        // T VisitWriteStatement(Statement.Write stmt);
         T VisitIfStatement(Statement.If stmt);
         T VisitWhileStatement(Statement.While stmt);
         T VisitAssertStatement(Statement.Assert stmt);
@@ -101,10 +101,10 @@ public abstract class Statement
     public class ArrayDeclarement : Statement
     {
         public Token Type { get; }
-        public int Size { get; }
+        public Expression Size { get; }
         public List<string> Identifiers { get; }
 
-        public ArrayDeclarement(Token type, int size, List<string> idents)
+        public ArrayDeclarement(Token type, Expression size, List<string> idents)
         {
             Type = type;
             Size = size;
@@ -190,10 +190,12 @@ public abstract class Statement
     public class Assert : Statement
     {
         public Expression Expr { get; }
+        public List<Token> Tokens { get; }
 
-        public Assert(Expression expr)
+        public Assert(Expression expr, List<Token> tokens)
         {
             Expr = expr;
+            Tokens = tokens;
         }
 
         public override T Accept<T>(Visitor<T> visitor)
@@ -217,23 +219,23 @@ public abstract class Statement
         }
     }
 
-    public class Write : Statement
-    {
-        public List<Expression> Arguments { get; }
+    // public class Write : Statement
+    // {
+    //     public List<Expression> Arguments { get; }
 
-        public Write(List<Expression> args)
-        {
-            Arguments = args;
-        }
+    //     public Write(List<Expression> args)
+    //     {
+    //         Arguments = args;
+    //     }
 
-        public override string ToString()
-        {
-            return string.Format("(writeln {0})", string.Join(',', Arguments));
-        }
+    //     public override string ToString()
+    //     {
+    //         return string.Format("(writeln {0})", string.Join(',', Arguments));
+    //     }
 
-        public override T Accept<T>(Visitor<T> visitor)
-        {
-            return visitor.VisitWriteStatement(this);
-        }
-    }
+    //     public override T Accept<T>(Visitor<T> visitor)
+    //     {
+    //         return visitor.VisitWriteStatement(this);
+    //     }
+    // }
 }

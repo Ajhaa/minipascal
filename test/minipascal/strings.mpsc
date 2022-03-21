@@ -1,0 +1,13 @@
+program Strings;
+
+begin
+    var s1, s2, s3 : string;
+
+    s1 := "hello";
+    s2 := " world";
+
+    s3 := s1 + s2;
+
+    assert (s3 = "hello world");
+    assert (s3 = s1 + s2);
+end.

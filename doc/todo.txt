@@ -1,4 +1,12 @@
-Var parameters.
+Forward declaration param problem.
+Better error when var doesnt exist in addition or others.
+Check possible string relation operations.
+Line numbers to C errors.
+Arrays don't need an initial size?
+Array params.
+Move var parameter stuff to analyzer.
+Why is assert treated differently than write and read?
+
 Check that if and while blocks are handled correctly in analyzer.
 Booleans.
 Unary expressions.

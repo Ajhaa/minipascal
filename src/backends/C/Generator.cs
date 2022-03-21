@@ -13,7 +13,7 @@ namespace C
         private Environment environment = new Environment();
         private Environment functions = new Environment();
         // private int memoryPointer = 0;
-        private Dictionary<string, List<bool>> passByVar = new Dictionary<string, List<bool>>();
+        private Dictionary<string, List<Tuple<string, bool>>> passByVar = new Dictionary<string, List<Tuple<string, bool>>>();
         private int tempVariableIndex = 0;
 
         public Generator(List<Statement.Function> program)
@@ -56,6 +56,19 @@ namespace C
             return template + tempVariableIndex++;
         }
 
+        private bool isPassByVar(string func, string ident)
+        {
+            foreach (var tuple in passByVar[func])
+            {
+                if (tuple.Item1 == ident)
+                {
+                    return tuple.Item2;
+                }
+            }
+
+            return false;
+        }
+
         public object VisitFunctionStatement(Statement.Function stmt)
         {
             var name = stmt.Identifier;
@@ -65,14 +78,20 @@ namespace C
 
             // TODO too many nested envs?
             environment.EnterInner();
-            passByVar.Add(name, new List<bool>());
             // TODO pass by
+            passByVar[name] = new List<Tuple<string, bool>>();
+            // Move this to parameter visitor?
             foreach (var param in stmt.Parameters)
             {
                 environment.Declare(param.Identifier);
                 current.Locals++;
-                current.AddParam(param.Identifier, param.Type);
-                passByVar[name].Add(param.IsRef);
+                var cParamType = Util.TypeToCType(param.Type);
+                if (param.IsRef)
+                {
+                    cParamType += '*';
+                }
+                current.AddParam(param.Identifier, cParamType);
+                passByVar[name].Add(Tuple.Create(param.Identifier, param.IsRef));
 
             }
 
@@ -133,7 +152,7 @@ namespace C
             {
                 environment.Declare(ident);
 
-                var size = stmt.Size;
+                var size = stmt.Size.Accept(this);
                 var type = Util.TypeToCType(stmt.Type);
                 var stmtType = stmt.Type.Content.ToString();
                 var temp = getTempVar();
@@ -179,10 +198,11 @@ namespace C
             return null;
         }
 
-        object Statement.Visitor<object>.VisitWriteStatement(Statement.Write stmt)
-        {
-            throw new NotImplementedException();
-        }
+        // object Statement.Visitor<object>.VisitWriteStatement(Statement.Write stmt)
+        // {
+        //     // Will not be implemented, should delete
+        //     throw new NotImplementedException();
+        // }
 
         //TODO lables and others without ;
         object Statement.Visitor<object>.VisitIfStatement(Statement.If stmt)
@@ -223,7 +243,19 @@ namespace C
         object Statement.Visitor<object>.VisitAssertStatement(Statement.Assert stmt)
         {
             var res = stmt.Expr.Accept(this);
-            addStatement(string.Format("assert({0} != 0)", res));
+            var stringRepr = new List<string>();
+            var label = getTempVar("__label_");
+            foreach (var token in stmt.Tokens)
+            {
+                stringRepr.Add(token.toMinipascal());
+            }
+            var joined = string.Join(" ", stringRepr);
+            addStatement(
+                $"if ({res} != 0) goto {label}",
+                $"printf(\"Assertion %s failed at line TODO\", \"{joined}\")",
+                $"exit(1)",
+                $"{label}:"
+            );
             return null;
         }
 
@@ -244,6 +276,7 @@ namespace C
             {
                 // TODO handle string + integer
                 var lenTemp = "__temp_" + tempVariableIndex++;
+                addLine("/* Start string concatenation */");
                 addStatement(
                     string.Format("size_t {0} = strlen({1}) + strlen({2})", lenTemp, rTemp1, rTemp2),
                     string.Format("{0} = {0} + 1", lenTemp),
@@ -251,10 +284,11 @@ namespace C
                     string.Format("strcat({0},{1})", tempVariable, rTemp1, rTemp2),
                     string.Format("strcat({0},{2})", tempVariable, rTemp1, rTemp2)
                 );
+                addLine("/* End string concatenation */");
             }
             else
             {
-                throw new Exception("Addition expression wrong type " + expr.Type);
+                throw new Exception($"Addition expression wrong type '{expr.Type}'");
             }
             return tempVariable;
         }
@@ -287,10 +321,35 @@ namespace C
             // TODO index out of bounds check
             if (expr.Indexer != null)
             {
+                // TODO handle the pass as ref case var*
+
                 var indexer = expr.Indexer.Accept(this);
-                return string.Format("{0}->content[{1}]", expr.Identifier, indexer);
+                var underBoundsVar = getTempVar("__under_bound_");
+                var overBoundsVar = getTempVar("__over_bound_");
+                var boundCheckLabel = getTempVar("__label_");
+                addLine("/* Begin array bound check */");
+                addStatement(
+                    $"bool {underBoundsVar} = {indexer} >= 0",
+                    $"bool {overBoundsVar} = {indexer} < {expr.Identifier}->size",
+                    $"if ({underBoundsVar} && {overBoundsVar}) goto {boundCheckLabel}",
+                    $"printf(\"Line TODO: Index out of bounds, index %d, size %zu\", {indexer}, {expr.Identifier}->size)",
+                    $"exit(1)",
+                    $"{boundCheckLabel}:"
+                );
+                addLine("/* End Array bound check */");
+                var stmt = string.Format("{0}->content[{1}]", expr.Identifier, indexer);
+                if (isPassByVar(current.Name, expr.Identifier))
+                {
+                    return $"(*{stmt})";
+                }
+
+                return stmt;
             }
-            // TODO handle the pass as ref case var*
+
+            if (isPassByVar(current.Name, expr.Identifier))
+            {
+                return $"(*{expr.Identifier})";
+            }
             return expr.Identifier;
         }
 
@@ -319,10 +378,23 @@ namespace C
             {
                 var temp = getTempVar();
                 var args = new List<string>();
+
+                var iter = passByVar[expr.Identifier].GetEnumerator();
                 // TODO pass by ref
                 foreach (var arg in expr.Arguments)
                 {
-                    args.Add(arg.Accept(this));
+                    var argResult = arg.Accept(this);
+                    iter.MoveNext();
+                    var isRef = iter.Current.Item2;
+
+                    if (isRef)
+                    {
+                        args.Add($"&{argResult}");
+                    }
+                    else
+                    {
+                        args.Add(argResult);
+                    }
                 }
 
                 var type = Util.TypeToCType(expr.Type);
@@ -415,7 +487,19 @@ namespace C
             var rTemp1 = expr.Left.Accept(this);
             var rTemp2 = expr.Right.Accept(this);
 
-            addStatement("bool " + tempVariable + " = " + rTemp1 + Util.OpToC(expr.Operation) + rTemp2);
+            if (expr.Type == "string")
+            {
+                // strcmp returns 0 if strings are equal, so the result has to be flipped to act as a boolean
+                addStatement(
+                    $"bool {tempVariable} = strcmp({rTemp1}, {rTemp2})",
+                    $"{tempVariable} = {tempVariable} == 0"
+                );
+            }
+            else
+            {
+                addStatement($"bool {tempVariable} = {rTemp1} {Util.OpToC(expr.Operation)} {rTemp2}");
+            }
+
             return tempVariable;
         }
 

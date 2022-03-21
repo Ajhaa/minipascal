@@ -43,43 +43,43 @@ class Scanner
         {
             // Simple one char
             case '+':
-                addToken(PLUS, null);
+                addToken(PLUS, "+");
                 break;
             case '-':
-                addToken(MINUS, null);
+                addToken(MINUS, "-");
                 break;
             case '*':
-                addToken(STAR, null);
+                addToken(STAR, "*");
                 break;
             case '%':
-                addToken(PERCENT, null);
+                addToken(PERCENT, "%");
                 break;
             case '/':
-                addToken(SLASH, null);
+                addToken(SLASH, "/");
                 break;
             case '=':
-                addToken(EQUAL, null);
+                addToken(EQUAL, "=");
                 break;
             case '(':
-                addToken(LEFT_PAREN, null);
+                addToken(LEFT_PAREN, "(");
                 break;
             case ')':
-                addToken(RIGHT_PAREN, null);
+                addToken(RIGHT_PAREN, ")");
                 break;
             case '[':
-                addToken(LEFT_BRACKET, null);
+                addToken(LEFT_BRACKET, "[");
                 break;
             case ']':
-                addToken(RIGHT_BRACKET, null);
+                addToken(RIGHT_BRACKET, "]");
                 break;
             case '.':
-                addToken(DOT, null);
+                addToken(DOT, ".");
                 break;
             case ',':
-                addToken(COMMA, null);
+                addToken(COMMA, ",");
                 break;
             case ';':
-                addToken(SEMICOLON, null);
+                addToken(SEMICOLON, ";");
                 break;
 
             // two char and amiguous
@@ -87,11 +87,11 @@ class Scanner
                 if (lookahead() == '=')
                 {
                     index++;
-                    addToken(GREATER_EQ, null);
+                    addToken(GREATER_EQ, ">=");
                 }
                 else
                 {
-                    addToken(GREATER, null);
+                    addToken(GREATER, ">");
                 }
                 break;
 
@@ -99,16 +99,16 @@ class Scanner
                 if (lookahead() == '=')
                 {
                     index++;
-                    addToken(LESS_EQ, null);
+                    addToken(LESS_EQ, "<=");
                 }
                 else if (lookahead() == '>')
                 {
                     index++;
-                    addToken(NOT_EQUAL, null);
+                    addToken(NOT_EQUAL, "<>");
                 }
                 else
                 {
-                    addToken(LESS, null);
+                    addToken(LESS, "<");
                 }
                 break;
 
@@ -116,11 +116,11 @@ class Scanner
                 if (lookahead() == '=')
                 {
                     index++;
-                    addToken(ASSIGN, null);
+                    addToken(ASSIGN, ":=");
                 }
                 else
                 {
-                    addToken(COLON, null);
+                    addToken(COLON, ":");
                 }
                 break;
 
@@ -220,7 +220,7 @@ class Scanner
                     }
                     isReal = true;
                 }
-                else if (next == 'e') 
+                else if (next == 'e')
                 {
                     if (isExponent)
                     {
@@ -242,8 +242,8 @@ class Scanner
         if (isReal)
         {
             addToken(type, double.Parse(str));
-        } 
-        else 
+        }
+        else
         {
             addToken(type, int.Parse(str));
         }

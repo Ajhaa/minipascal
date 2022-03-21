@@ -1,0 +1,19 @@
+program Test;
+
+function addandsquare (x : integer, y : integer) : integer;
+begin
+    var z : integer;
+    z := x + y;
+    return square(z);
+end;
+
+function square(x : integer) : integer;
+begin
+    return x * x;
+end;
+
+begin
+    var result : integer;
+    result := addandsquare(2, 3);
+    assert(result = 36);
+end.

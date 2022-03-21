@@ -17,7 +17,6 @@ class AnalyzerEnvironment
 
     public string GetType(string elem)
     {
-        // TODO check deeper
         var first = environment.First.Value.GetValueOrDefault(elem, null);
         if (first == null) {
             var current = environment.First.Next;

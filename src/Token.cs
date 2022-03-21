@@ -1,7 +1,7 @@
-public enum TokenType 
+public enum TokenType
 {
-    IDENTIFIER, INTEGER, REAL, STRING, 
-    
+    IDENTIFIER, INTEGER, REAL, STRING,
+
     OR, AND, NOT, IF,
     THEN, ELSE, OF, WHILE, DO, BEGIN,
     END, VAR, ARRAY, PROCEDURE, FUNCTION,
@@ -28,9 +28,18 @@ public class Token
         Line = line;
     }
 
-    public override string ToString() 
+    public override string ToString()
     {
         if (Content == null) return Type.ToString();
         return string.Format("{0}:{1}", Type, Content);
+    }
+
+    public string toMinipascal()
+    {
+        if (Type == TokenType.STRING)
+        {
+            return $"\\\"{Content.ToString()}\\\"";
+        }
+        return Content.ToString();
     }
 }
